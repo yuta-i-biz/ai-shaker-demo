@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>注文代行 → レガシーシステム RPA自動入力</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Caveat:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  .header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #fff;
+    padding: 14px 28px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+  }
+  .header-badge {
+    background: #3b82f6;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+  .header h1 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .header-sub {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-left: auto;
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .column {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid #e2e8f0;
+  }
+  .column:last-child { border-right: none; }
+
+  .col-header {
+    padding: 12px 18px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .col-header.line   { background: #f0fdf4; color: #06C755; border-bottom-color: #bbf7d0; }
+  .col-header.ai     { background: #eff6ff; color: #3b82f6; border-bottom-color: #bfdbfe; }
+  .col-header.legacy { background: #f5f3ff; color: #7c3aed; border-bottom-color: #ddd6fe; }
+
+  /* ===== LEFT: LINE BOT ===== */
+  .line-column { background: #fff; }
+
+  .line-header {
+    background: #06C755;
+    color: #fff;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .line-avatar {
+    width: 34px; height: 34px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .line-name { font-size: 14px; font-weight: 700; }
+  .line-status { font-size: 11px; opacity: 0.85; }
+
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: #e8f5e9;
+  }
+
+  .msg {
+    display: flex;
+    gap: 8px;
+    max-width: 85%;
+    animation: msgIn 0.3s ease;
+  }
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .msg.user { margin-left: auto; flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .msg.bot  .msg-avatar { background: #06C755; color: #fff; font-size: 16px; }
+  .msg.user .msg-avatar { background: #64748b; color: #fff; font-size: 13px; }
+
+  .msg-bubble {
+    padding: 8px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+  }
+  .msg.bot  .msg-bubble { background: #fff; color: #1e293b; border-radius: 4px 14px 14px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .msg.user .msg-bubble { background: #06C755; color: #fff; border-radius: 14px 4px 14px 14px; }
+
+  /* FAX mock inside chat */
+  .fax-mock {
+    background: #f5f5f0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 14px 16px;
+    margin: 4px 0;
+    font-family: 'Caveat', cursive;
+    position: relative;
+    box-shadow: 2px 3px 8px rgba(0,0,0,0.12);
+    max-width: 260px;
+    display: none;
+    animation: msgIn 0.4s ease;
+  }
+  .fax-mock::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 24px,
+      rgba(0,0,0,0.04) 24px, rgba(0,0,0,0.04) 25px
+    );
+    border-radius: 6px;
+    pointer-events: none;
+  }
+  .fax-title {
+    font-size: 20px; font-weight: 600; color: #222;
+    text-align: center; margin-bottom: 10px;
+    transform: rotate(-1deg); display: block;
+    border-bottom: 1px solid #aaa; padding-bottom: 6px;
+  }
+  .fax-line {
+    font-size: 15px; color: #333; margin: 5px 0;
+    display: block;
+  }
+  .fax-line:nth-child(odd)  { transform: rotate(-0.8deg); }
+  .fax-line:nth-child(even) { transform: rotate(0.5deg); }
+  .fax-stamp {
+    position: absolute; top: 8px; right: 10px;
+    border: 2px solid #c00; color: #c00;
+    font-size: 10px; font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700; padding: 2px 5px;
+    border-radius: 3px; transform: rotate(8deg);
+    opacity: 0.7;
+  }
+
+  /* Rich menu */
+  .rich-menu {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: #ccc;
+    flex-shrink: 0;
+  }
+  .rich-btn {
+    background: #fff;
+    border: none;
+    padding: 10px 4px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1e293b;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    line-height: 1.2;
+  }
+  .rich-btn .rm-icon { font-size: 20px; }
+  .rich-btn:hover { background: #f0fdf4; color: #06C755; }
+  .rich-btn.active { background: #06C755; color: #fff; }
+
+  .demo-btn-wrap {
+    padding: 10px 12px;
+    background: #fff;
+    flex-shrink: 0;
+    border-top: 1px solid #e2e8f0;
+  }
+  .demo-btn {
+    width: 100%;
+    background: #06C755;
+    color: #fff;
+    border: none;
+    border-radius: 24px;
+    padding: 11px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+  }
+  .demo-btn:hover  { background: #05a847; }
+  .demo-btn:active { transform: scale(0.97); }
+  .demo-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+
+  /* ===== CENTER: AI PROCESSING ===== */
+  .ai-column { background: #f8fafc; }
+
+  .ai-steps {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    transition: all 0.4s ease;
+    opacity: 0.45;
+  }
+  .step.active {
+    border-color: #3b82f6;
+    background: #eff6ff;
+    opacity: 1;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+  }
+  .step.done {
+    border-color: #22c55e;
+    background: #f0fdf4;
+    opacity: 1;
+  }
+
+  .step-indicator {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .step.active .step-indicator {
+    background: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.25);
+    animation: pulse 1.4s infinite;
+  }
+  .step.done .step-indicator { background: #22c55e; }
+  .step:not(.active):not(.done) .step-indicator { background: #cbd5e1; }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(59,130,246,0.25); }
+    50%       { box-shadow: 0 0 0 8px rgba(59,130,246,0.1); }
+  }
+
+  .step-indicator-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .step-indicator-check { color: #fff; font-size: 13px; font-weight: 700; }
+
+  .step-text { font-size: 13px; line-height: 1.5; }
+  .step-label { font-weight: 600; color: #1e293b; }
+  .step.active .step-label { color: #1d4ed8; }
+  .step.done  .step-label  { color: #15803d; }
+  .step-sub {
+    font-size: 11px; color: #64748b; margin-top: 2px;
+    display: none;
+  }
+  .step.active .step-sub,
+  .step.done   .step-sub { display: block; }
+
+  .ai-info-box {
+    margin: 0 20px 18px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    flex-shrink: 0;
+  }
+  .ai-info-title { font-size: 11px; color: #64748b; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .ai-info-item { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px solid #f1f5f9; }
+  .ai-info-item:last-child { border-bottom: none; }
+  .ai-info-key { color: #64748b; }
+  .ai-info-val { color: #1e293b; font-weight: 500; }
+
+  /* ===== RIGHT: LEGACY SYSTEM ===== */
+  .legacy-column { background: #d4d0c8; overflow: hidden; }
+  .legacy-column .col-header {
+    background: #d4d0c8;
+    color: #000;
+    border-bottom: 1px solid #999;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: none;
+  }
+
+  .win-window {
+    margin: 12px;
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    box-shadow: 2px 2px 0 #000;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .win-titlebar {
+    background: linear-gradient(to right, #000080, #1084d0);
+    color: #fff;
+    padding: 4px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    user-select: none;
+  }
+  .win-controls { display: flex; gap: 3px; }
+  .win-btn {
+    width: 16px; height: 14px;
+    background: #d4d0c8;
+    border: 1px solid;
+    border-color: #fff #808080 #808080 #fff;
+    font-size: 10px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #000;
+    font-family: monospace;
+  }
+
+  .win-menubar {
+    background: #d4d0c8;
+    padding: 3px 8px;
+    font-size: 12px;
+    border-bottom: 1px solid #808080;
+    display: flex; gap: 16px;
+    flex-shrink: 0;
+  }
+  .win-menubar span {
+    cursor: pointer; color: #000;
+    text-decoration: underline;
+    text-decoration-skip-ink: none;
+  }
+  .win-menubar span:first-child::first-letter { text-decoration: none; }
+
+  .win-body {
+    flex: 1; overflow-y: auto;
+    padding: 14px 16px;
+    background: #d4d0c8;
+  }
+
+  .win-section-title {
+    font-size: 12px; font-weight: 700;
+    color: #000; margin-bottom: 10px;
+    border-bottom: 1px solid #808080;
+    padding-bottom: 4px;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    gap: 6px;
+  }
+  .form-label {
+    font-size: 12px; color: #000;
+    font-family: 'Noto Sans JP', sans-serif;
+    width: 68px; flex-shrink: 0; text-align: right;
+  }
+  .form-input {
+    flex: 1;
+    height: 22px;
+    background: #fff;
+    border: 2px solid;
+    border-color: #808080 #fff #fff #808080;
+    padding: 0 4px;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+    color: #000;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .form-input.typing {
+    border-color: #000080 #fff #fff #000080;
+  }
+  .form-input-text {
+    display: inline;
+  }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: #000;
+    vertical-align: text-bottom;
+    animation: blink 0.8s step-end infinite;
+  }
+  .cursor.hidden { display: none; }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0; }
+  }
+
+  .win-btn-row {
+    display: flex; gap: 8px; justify-content: flex-end;
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid #808080;
+  }
+  .win-action-btn {
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    padding: 4px 20px;
+    font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    transition: border-color 0.1s;
+  }
+  .win-action-btn:active {
+    border-color: #808080 #fff #fff #808080;
+  }
+  .win-action-btn.register-btn {
+    animation: none;
+  }
+  .win-action-btn.register-btn.glow {
+    animation: btnGlow 0.5s ease 3;
+    border-color: #000080 #808080 #808080 #000080;
+  }
+  @keyframes btnGlow {
+    0%, 100% { background: #d4d0c8; }
+    50%       { background: #000080; color: #fff; }
+  }
+
+  /* Win dialog */
+  .win-dialog-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+  }
+  .win-dialog-overlay.show { display: flex; }
+  .win-dialog {
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    box-shadow: 3px 3px 0 #000;
+    min-width: 260px;
+    animation: dialogIn 0.25s ease;
+  }
+  @keyframes dialogIn {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+  }
+  .win-dialog-title {
+    background: linear-gradient(to right, #000080, #1084d0);
+    color: #fff; padding: 4px 10px;
+    font-size: 12px; font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .win-dialog-body {
+    padding: 20px 18px 10px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .dialog-icon {
+    font-size: 28px; flex-shrink: 0; margin-top: 2px;
+  }
+  .dialog-msg { font-size: 13px; line-height: 1.6; font-family: 'Noto Sans JP', sans-serif; }
+  .dialog-msg strong { color: #000080; }
+  .win-dialog-footer {
+    padding: 6px 18px 14px; text-align: center;
+  }
+  .dialog-ok-btn {
+    background: #d4d0c8;
+    border: 2px solid;
+    border-color: #fff #808080 #808080 #fff;
+    padding: 4px 32px;
+    font-size: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 0 2px #000;
+  }
+
+  /* Legacy column layout */
+  .legacy-inner {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: hidden;
+    padding: 0 12px 12px;
+    position: relative;
+  }
+
+  /* Status bar */
+  .win-statusbar {
+    background: #d4d0c8;
+    border-top: 1px solid #808080;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-family: 'Noto Sans JP', sans-serif;
+    display: flex; gap: 10px;
+    flex-shrink: 0;
+  }
+  .status-cell {
+    border: 1px solid #808080;
+    padding: 1px 8px;
+    background: #d4d0c8;
+  }
+
+  /* Scrollbar for chat */
+  .chat-area::-webkit-scrollbar { width: 5px; }
+  .chat-area::-webkit-scrollbar-track { background: transparent; }
+  .chat-area::-webkit-scrollbar-thumb { background: #a7d7b0; border-radius: 3px; }
+
+  .ai-steps::-webkit-scrollbar { width: 5px; }
+  .ai-steps::-webkit-scrollbar-track { background: transparent; }
+  .ai-steps::-webkit-scrollbar-thumb { background: #bfdbfe; border-radius: 3px; }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin: 0 20px 16px;
+    flex-shrink: 0;
+  }
+  .progress-label { font-size: 11px; color: #64748b; margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+  .progress-fill {
+    height: 100%; background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    border-radius: 3px;
+    transition: width 1.5s ease;
+    width: 0%;
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-badge">AI Shaker</div>
+  <h1>注文代行 → レガシーシステム RPA自動入力</h1>
+  <div class="header-sub">インタラクティブデモ</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- LEFT: LINE BOT -->
+  <div class="column line-column">
+    <div class="col-header line">LINE Bot</div>
+
+    <div class="line-header">
+      <div class="line-avatar">🤖</div>
+      <div>
+        <div class="line-name">AI Shaker Bot</div>
+        <div class="line-status">オンライン</div>
+      </div>
+    </div>
+
+    <div class="chat-area" id="chatArea">
+      <div class="msg bot">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-bubble">こんにちは！AI Shaker Botです。下のメニューからご用件をお選びください。</div>
+      </div>
+    </div>
+
+    <!-- FAX mock (hidden initially, will be inserted into chat) -->
+    <template id="faxTemplate">
+      <div class="msg bot">
+        <div class="msg-avatar">🤖</div>
+        <div>
+          <div class="msg-bubble" style="margin-bottom:6px;">以下のFAXを受信しました。</div>
+          <div class="fax-mock" style="display:block;">
+            <div class="fax-stamp">FAX受信</div>
+            <span class="fax-title">注 文 書</span>
+            <span class="fax-line">品名: スチールパイプ A-200</span>
+            <span class="fax-line">数量: 50 本</span>
+            <span class="fax-line">単価: ¥1,200</span>
+            <span class="fax-line">納期: 3月25日</span>
+            <span class="fax-line">発注元: 山田商店</span>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <div class="rich-menu">
+      <button class="rich-btn" onclick="selectMenu(this)">
+        <span class="rm-icon">💳</span>経費精算
+      </button>
+      <button class="rich-btn active" id="orderBtn" onclick="selectMenu(this)">
+        <span class="rm-icon">📦</span>注文代行
+      </button>
+      <button class="rich-btn" onclick="selectMenu(this)">
+        <span class="rm-icon">🕐</span>勤怠報告
+      </button>
+      <button class="rich-btn" onclick="selectMenu(this)">
+        <span class="rm-icon">📅</span>日程調整
+      </button>
+      <button class="rich-btn" onclick="selectMenu(this)">
+        <span class="rm-icon">💰</span>資金繰り
+      </button>
+      <button class="rich-btn" onclick="selectMenu(this)">
+        <span class="rm-icon">💬</span>その他
+      </button>
+    </div>
+
+    <div class="demo-btn-wrap">
+      <button class="demo-btn" id="demoBtn" onclick="runDemo()">▶ デモを開始</button>
+    </div>
+  </div>
+
+  <!-- CENTER: AI PROCESSING -->
+  <div class="column ai-column">
+    <div class="col-header ai">AI Processing</div>
+
+    <div class="ai-steps" id="aiSteps">
+      <div class="step" id="step0">
+        <div class="step-indicator">
+          <div class="step-indicator-dot"></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">📠 FAX画像を受信</div>
+          <div class="step-sub">山田商店からの注文書を取得</div>
+        </div>
+      </div>
+      <div class="step" id="step1">
+        <div class="step-indicator">
+          <div class="step-indicator-dot"></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">🔍 手書き文字をOCR解析中...</div>
+          <div class="step-sub">Google Vision API で文字認識</div>
+        </div>
+      </div>
+      <div class="step" id="step2">
+        <div class="step-indicator">
+          <div class="step-indicator-dot"></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">📋 発注データを構造化</div>
+          <div class="step-sub">品名 / 数量 / 単価 / 納期</div>
+        </div>
+      </div>
+      <div class="step" id="step3">
+        <div class="step-indicator">
+          <div class="step-indicator-dot"></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">🖥️ 基幹システムに接続中（レガシーフォーム）</div>
+          <div class="step-sub">VPN接続 → 受注管理システム v3.2</div>
+        </div>
+      </div>
+      <div class="step" id="step4">
+        <div class="step-indicator">
+          <div class="step-indicator-dot"></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">🤖 RPAで自動入力を開始...</div>
+          <div class="step-sub">フォームフィールドに順次入力</div>
+        </div>
+      </div>
+      <div class="step" id="step5">
+        <div class="step-indicator">
+          <div class="step-indicator-dot"></div>
+        </div>
+        <div class="step-text">
+          <div class="step-label">✅ 発注登録完了（受注番号: ORD-2026-0847）</div>
+          <div class="step-sub">田中部長にLINE通知を送信済み</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>処理進捗</span>
+        <span id="progressText">0 / 6</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="ai-info-box">
+      <div class="ai-info-title">解析データ</div>
+      <div class="ai-info-item">
+        <span class="ai-info-key">品名</span>
+        <span class="ai-info-val" id="infoHin">—</span>
+      </div>
+      <div class="ai-info-item">
+        <span class="ai-info-key">数量</span>
+        <span class="ai-info-val" id="infoSuryo">—</span>
+      </div>
+      <div class="ai-info-item">
+        <span class="ai-info-key">単価</span>
+        <span class="ai-info-val" id="infoTanka">—</span>
+      </div>
+      <div class="ai-info-item">
+        <span class="ai-info-key">発注元</span>
+        <span class="ai-info-val" id="infoHacchu">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: LEGACY SYSTEM -->
+  <div class="column legacy-column" style="position:relative;">
+    <div class="col-header legacy">System Integration — Legacy ERP</div>
+
+    <div class="legacy-inner">
+      <div class="win-window">
+        <div class="win-titlebar">
+          <span>受注管理システム v3.2</span>
+          <div class="win-controls">
+            <div class="win-btn">_</div>
+            <div class="win-btn">□</div>
+            <div class="win-btn">✕</div>
+          </div>
+        </div>
+        <div class="win-menubar">
+          <span>ファイル(F)</span>
+          <span>編集(E)</span>
+          <span>表示(V)</span>
+          <span>ヘルプ(H)</span>
+        </div>
+        <div class="win-body">
+          <div class="win-section-title">■ 新規発注登録</div>
+
+          <div class="form-group">
+            <label class="form-label">品名:</label>
+            <div class="form-input" id="fi_hinmei">
+              <span class="form-input-text" id="ft_hinmei"></span>
+              <span class="cursor hidden" id="fc_hinmei"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">数量:</label>
+            <div class="form-input" id="fi_suryo">
+              <span class="form-input-text" id="ft_suryo"></span>
+              <span class="cursor hidden" id="fc_suryo"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">単価:</label>
+            <div class="form-input" id="fi_tanka">
+              <span class="form-input-text" id="ft_tanka"></span>
+              <span class="cursor hidden" id="fc_tanka"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">納期:</label>
+            <div class="form-input" id="fi_noki">
+              <span class="form-input-text" id="ft_noki"></span>
+              <span class="cursor hidden" id="fc_noki"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">発注元:</label>
+            <div class="form-input" id="fi_hacchu">
+              <span class="form-input-text" id="ft_hacchu"></span>
+              <span class="cursor hidden" id="fc_hacchu"></span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">受注番号:</label>
+            <div class="form-input" id="fi_juchu">
+              <span class="form-input-text" id="ft_juchu"></span>
+              <span class="cursor hidden" id="fc_juchu"></span>
+            </div>
+          </div>
+
+          <div class="win-btn-row">
+            <button class="win-action-btn">クリア(C)</button>
+            <button class="win-action-btn register-btn" id="registerBtn">登録(R)</button>
+          </div>
+        </div>
+        <div class="win-statusbar">
+          <div class="status-cell" id="statusCell">準備完了</div>
+          <div class="status-cell">ユーザー: ADMIN</div>
+          <div class="status-cell" id="dateCell"></div>
+        </div>
+      </div>
+
+      <!-- Dialog overlay -->
+      <div class="win-dialog-overlay" id="dialogOverlay">
+        <div class="win-dialog">
+          <div class="win-dialog-title">
+            <span>情報</span>
+            <div class="win-btn">✕</div>
+          </div>
+          <div class="win-dialog-body">
+            <div class="dialog-icon">ℹ️</div>
+            <div class="dialog-msg">
+              発注データを登録しました。<br>
+              <strong>受注番号: ORD-2026-0847</strong><br>
+              担当者へ確認メールを送信します。
+            </div>
+          </div>
+          <div class="win-dialog-footer">
+            <button class="dialog-ok-btn" onclick="closeDialog()">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Date in status bar
+  const dc = document.getElementById('dateCell');
+  if (dc) dc.textContent = new Date().toLocaleDateString('ja-JP');
+
+  let isRunning = false;
+
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function selectMenu(btn) {
+    document.querySelectorAll('.rich-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  function addLineMessage(type, text) {
+    const chatArea = document.getElementById('chatArea');
+    const div = document.createElement('div');
+    div.className = 'msg ' + type;
+    if (type === 'bot') {
+      div.innerHTML = `<div class="msg-avatar">🤖</div><div class="msg-bubble">${text}</div>`;
+    } else {
+      div.innerHTML = `<div class="msg-avatar">👤</div><div class="msg-bubble">${text}</div>`;
+    }
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  function showFaxInChat() {
+    const chatArea = document.getElementById('chatArea');
+    const tmpl = document.getElementById('faxTemplate');
+    const clone = tmpl.content.cloneNode(true);
+    chatArea.appendChild(clone);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  function activateStep(i) {
+    const step = document.getElementById('step' + i);
+    // Complete previous
+    if (i > 0) {
+      const prev = document.getElementById('step' + (i - 1));
+      prev.classList.remove('active');
+      prev.classList.add('done');
+      const prevInd = prev.querySelector('.step-indicator');
+      prevInd.innerHTML = '<span class="step-indicator-check">✓</span>';
+    }
+    step.classList.add('active');
+    step.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Update progress
+    const total = 6;
+    const pct = ((i + 1) / total * 100).toFixed(0);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = (i + 1) + ' / ' + total;
+  }
+
+  function completeLastStep() {
+    const step = document.getElementById('step5');
+    step.classList.remove('active');
+    step.classList.add('done');
+    const ind = step.querySelector('.step-indicator');
+    ind.innerHTML = '<span class="step-indicator-check">✓</span>';
+    document.getElementById('progressFill').style.width = '100%';
+    document.getElementById('progressText').textContent = '6 / 6';
+  }
+
+  async function typeIntoField(fieldId, text) {
+    const fi = document.getElementById('fi_' + fieldId);
+    const ft = document.getElementById('ft_' + fieldId);
+    const fc = document.getElementById('fc_' + fieldId);
+    fi.classList.add('typing');
+    fc.classList.remove('hidden');
+    document.getElementById('statusCell').textContent = 'RPA入力中: ' + text.split('')[0] + '...';
+
+    for (let i = 0; i < text.length; i++) {
+      ft.textContent += text[i];
+      await delay(32);
+    }
+
+    fc.classList.add('hidden');
+    fi.classList.remove('typing');
+    await delay(120);
+  }
+
+  async function doRpaTyping() {
+    await typeIntoField('hinmei',  'スチールパイプ A-200');
+    await typeIntoField('suryo',   '50本');
+    await typeIntoField('tanka',   '¥1,200');
+    await typeIntoField('noki',    '2026/03/25');
+    await typeIntoField('hacchu',  '山田商店');
+    await typeIntoField('juchu',   'ORD-2026-0847');
+    document.getElementById('statusCell').textContent = '入力完了';
+  }
+
+  function showDialog() {
+    document.getElementById('dialogOverlay').classList.add('show');
+  }
+  function closeDialog() {
+    document.getElementById('dialogOverlay').classList.remove('show');
+  }
+
+  function resetDemo() {
+    // Chat
+    const chatArea = document.getElementById('chatArea');
+    chatArea.innerHTML = `<div class="msg bot">
+      <div class="msg-avatar">🤖</div>
+      <div class="msg-bubble">こんにちは！AI Shaker Botです。下のメニューからご用件をお選びください。</div>
+    </div>`;
+
+    // Steps
+    for (let i = 0; i < 6; i++) {
+      const s = document.getElementById('step' + i);
+      s.className = 'step';
+      s.querySelector('.step-indicator').innerHTML = '<div class="step-indicator-dot"></div>';
+    }
+
+    // Progress
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('progressText').textContent = '0 / 6';
+
+    // Info
+    ['infoHin','infoSuryo','infoTanka','infoHacchu'].forEach(id => {
+      document.getElementById(id).textContent = '—';
+    });
+
+    // Form fields
+    ['hinmei','suryo','tanka','noki','hacchu','juchu'].forEach(f => {
+      document.getElementById('ft_' + f).textContent = '';
+      document.getElementById('fc_' + f).classList.add('hidden');
+      document.getElementById('fi_' + f).classList.remove('typing');
+    });
+
+    // Dialog
+    document.getElementById('dialogOverlay').classList.remove('show');
+
+    // Status
+    document.getElementById('statusCell').textContent = '準備完了';
+
+    // Register btn
+    const rb = document.getElementById('registerBtn');
+    rb.classList.remove('glow');
+
+    // Menu
+    document.querySelectorAll('.rich-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('orderBtn').classList.add('active');
+  }
+
+  async function runDemo() {
+    if (isRunning) return;
+    isRunning = true;
+    const btn = document.getElementById('demoBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ 実行中...';
+
+    resetDemo();
+
+    await delay(600);
+    addLineMessage('user', '📦 注文代行');
+
+    await delay(1000);
+    addLineMessage('bot', 'お待ちください。注文代行を開始します。FAXのデータを確認します。');
+
+    await delay(1400);
+    showFaxInChat();
+
+    await delay(1200);
+    addLineMessage('bot', 'FAXを受信しました。AI処理を開始します。');
+
+    // Step 0
+    await delay(1000);
+    activateStep(0);
+
+    // Step 1
+    await delay(1800);
+    activateStep(1);
+
+    // Step 2
+    await delay(2000);
+    activateStep(2);
+    await delay(600);
+    document.getElementById('infoHin').textContent    = 'スチールパイプ A-200';
+    document.getElementById('infoSuryo').textContent  = '50本';
+    document.getElementById('infoTanka').textContent  = '¥1,200';
+    document.getElementById('infoHacchu').textContent = '山田商店';
+
+    // Step 3
+    await delay(1800);
+    activateStep(3);
+
+    // Step 4: RPA
+    await delay(1600);
+    activateStep(4);
+    await delay(800);
+    await doRpaTyping();
+
+    // Register button glow
+    const rb = document.getElementById('registerBtn');
+    rb.classList.add('glow');
+    await delay(1800);
+
+    // Step 5: Complete
+    activateStep(5);
+    await delay(500);
+    completeLastStep();
+    showDialog();
+
+    await delay(900);
+    addLineMessage('bot', '✅ 発注登録が完了しました！\n受注番号: ORD-2026-0847\n山田商店への発注が完了です。');
+
+    btn.disabled = false;
+    btn.textContent = '🔄 もう一度デモを実行';
+    isRunning = false;
+  }
+</script>
+</body>
+</html>

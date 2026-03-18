@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>資金繰り → 財務ダッシュボード</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Caveat:wght@600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: #fff;
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  }
+  header .logo {
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    color: #06C755;
+    letter-spacing: 1px;
+  }
+  header h1 { font-size: 17px; font-weight: 700; letter-spacing: 0.5px; }
+  header .badge {
+    margin-left: auto;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+
+  /* ===== MAIN GRID ===== */
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 320px 280px 1fr;
+    gap: 0;
+    min-height: 0;
+  }
+
+  /* ===== COLUMN BASE ===== */
+  .col {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  .col-header {
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #64748b;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+  }
+
+  /* ===== LEFT: LINE BOT ===== */
+  .col-line {
+    border-right: 1px solid #e2e8f0;
+    background: #fff;
+  }
+  .line-phone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin: 12px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    border: 1px solid #e2e8f0;
+  }
+  .line-header {
+    background: #06C755;
+    color: #fff;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    border-radius: 16px 16px 0 0;
+  }
+  .line-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .line-header-info { flex: 1; }
+  .line-header-name { font-size: 14px; font-weight: 700; }
+  .line-header-status { font-size: 10px; opacity: 0.85; }
+
+  .line-chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 10px;
+    background: #c0d9c0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .line-chat::-webkit-scrollbar { width: 4px; }
+  .line-chat::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 2px; }
+
+  .msg {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    animation: msgFadeIn 0.35s ease-out;
+  }
+  @keyframes msgFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .msg.user { flex-direction: row-reverse; }
+  .msg-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #06C755;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .msg.user .msg-avatar { background: #94a3b8; }
+  .msg-bubble {
+    max-width: 75%;
+    padding: 8px 11px;
+    border-radius: 14px;
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+  .msg.bot .msg-bubble {
+    background: #fff;
+    color: #1e293b;
+    border-radius: 2px 14px 14px 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .msg.user .msg-bubble {
+    background: #b2f0c5;
+    color: #1e293b;
+    border-radius: 14px 14px 2px 14px;
+  }
+
+  /* Rich Menu */
+  .rich-menu {
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    padding: 8px;
+    flex-shrink: 0;
+  }
+  .rich-menu-label {
+    font-size: 10px;
+    color: #94a3b8;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .rich-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+  .rich-btn {
+    padding: 7px 4px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    font-size: 11px;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    color: #334155;
+    font-weight: 500;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .rich-btn:hover { background: #e0f7eb; border-color: #06C755; }
+  .rich-btn.active {
+    background: #06C755;
+    color: #fff;
+    border-color: #06C755;
+  }
+
+  .start-btn {
+    margin: 10px 12px;
+    padding: 11px;
+    background: linear-gradient(135deg, #06C755, #04a844);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    font-family: 'Noto Sans JP', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(6,199,85,0.35);
+  }
+  .start-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(6,199,85,0.45); }
+  .start-btn:active { transform: translateY(0); }
+
+  /* ===== CENTER: AI PROCESSING ===== */
+  .col-ai {
+    border-right: 1px solid #e2e8f0;
+    background: #fff;
+  }
+  .steps-area {
+    flex: 1;
+    padding: 16px 14px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.3s;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: #94a3b8;
+  }
+  .step.active {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #1e40af;
+  }
+  .step.done {
+    background: #f0fdf4;
+    border-color: #86efac;
+    color: #166534;
+  }
+  .step-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .step-status { margin-left: auto; flex-shrink: 0; }
+  .dot-anim {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #3b82f6;
+    animation: dotPulse 1s ease-in-out infinite;
+  }
+  @keyframes dotPulse {
+    0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(59,130,246,0.5); }
+    50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 0 6px rgba(59,130,246,0); }
+  }
+  .check { color: #16a34a; font-size: 15px; }
+
+  .ai-footer {
+    padding: 12px 14px;
+    border-top: 1px solid #f1f5f9;
+    flex-shrink: 0;
+  }
+  .ai-label {
+    font-size: 10px;
+    color: #94a3b8;
+    text-align: center;
+    margin-bottom: 6px;
+  }
+  .progress-bar-wrap {
+    background: #f1f5f9;
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.6s ease;
+  }
+
+  /* ===== RIGHT: FINANCIAL DASHBOARD ===== */
+  .col-dash {
+    background: #f8fafc;
+    overflow: hidden;
+  }
+  .dash-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .dash-area::-webkit-scrollbar { width: 4px; }
+  .dash-area::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 2px; }
+
+  /* --- Bank Cards --- */
+  .bank-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+  }
+  .bank-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 12px 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    border-top: 3px solid transparent;
+    transition: transform 0.2s;
+  }
+  .bank-card:hover { transform: translateY(-2px); }
+  .bank-card.blue  { border-color: #3b82f6; }
+  .bank-card.red   { border-color: #ef4444; }
+  .bank-card.purple{ border-color: #8b5cf6; }
+  .bank-card-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+  .bank-card-icon {
+    font-size: 16px;
+    margin-bottom: 4px;
+  }
+  .bank-card-amount {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+    font-variant-numeric: tabular-nums;
+  }
+  .bank-card.blue  .bank-card-amount { color: #1d4ed8; }
+  .bank-card.red   .bank-card-amount { color: #dc2626; }
+  .bank-card.purple .bank-card-amount { color: #7c3aed; }
+  .bank-card-sub {
+    font-size: 9px;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+
+  /* --- Chart Section --- */
+  .chart-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .chart-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .chart-legend {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 10px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: #64748b;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+  .legend-line {
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
+    position: relative;
+  }
+  .legend-line::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: inherit;
+  }
+
+  .chart-body {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    min-height: 120px;
+    position: relative;
+    padding-bottom: 24px;
+    padding-left: 32px;
+  }
+  /* Y axis lines */
+  .chart-body::before {
+    content: '';
+    position: absolute;
+    left: 32px; right: 0; top: 0; bottom: 24px;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent calc(25% - 1px),
+      #f1f5f9 calc(25% - 1px),
+      #f1f5f9 25%
+    );
+    pointer-events: none;
+  }
+  .chart-y-labels {
+    position: absolute;
+    left: 0; top: 0; bottom: 24px;
+    width: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 0;
+  }
+  .chart-y-label {
+    font-size: 9px;
+    color: #94a3b8;
+    text-align: right;
+    line-height: 1;
+  }
+
+  .month-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    height: 100%;
+  }
+  .bars-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    flex: 1;
+    width: 100%;
+    justify-content: center;
+    position: relative;
+  }
+  .bar {
+    width: 18px;
+    border-radius: 3px 3px 0 0;
+    height: 0;
+    transition: height 1s ease-out;
+    position: relative;
+  }
+  .bar-income  { background: #3b82f6; }
+  .bar-expense { background: #f97316; }
+  .bar-income:hover, .bar-expense:hover { opacity: 0.85; }
+  .bar-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e293b;
+    color: #fff;
+    font-size: 9px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    margin-bottom: 2px;
+  }
+  .bar:hover .bar-tooltip { opacity: 1; }
+
+  .month-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: #64748b;
+    margin-top: 4px;
+    text-align: center;
+  }
+  .danger-mark {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .danger-mark.show { opacity: 1; }
+  .month-group.danger .bars-row {
+    border: 2px solid #ef4444;
+    border-radius: 4px;
+    background: rgba(254,226,226,0.3);
+    padding: 0 2px;
+  }
+
+  /* Balance line (SVG overlay) */
+  .chart-svg-wrap {
+    position: absolute;
+    left: 32px; right: 0; top: 0; bottom: 24px;
+    pointer-events: none;
+  }
+  .balance-line {
+    fill: none;
+    stroke: #16a34a;
+    stroke-width: 2;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    transition: stroke-dashoffset 1.4s ease-out;
+  }
+  .balance-line.draw { stroke-dashoffset: 0; }
+  .balance-dot { fill: #16a34a; opacity: 0; transition: opacity 0.3s 1.2s; }
+  .balance-dot.show { opacity: 1; }
+
+  /* --- Alert Box --- */
+  .alert-box {
+    background: #fff5f5;
+    border: 2px solid #ef4444;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #991b1b;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    flex-shrink: 0;
+  }
+  .alert-box.show { opacity: 1; transform: translateY(0); }
+  .alert-box strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 4px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">AI Shaker</div>
+  <h1>資金繰り → 財務ダッシュボード連携デモ</h1>
+  <span class="badge">LIVE DEMO</span>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ===== LEFT: LINE BOT ===== -->
+  <div class="col col-line">
+    <div class="col-header">LINE Bot</div>
+    <div class="line-phone">
+      <div class="line-header">
+        <div class="line-avatar">🤖</div>
+        <div class="line-header-info">
+          <div class="line-header-name">AI Shaker Bot</div>
+          <div class="line-header-status">● オンライン</div>
+        </div>
+      </div>
+      <div class="line-chat" id="lineChat">
+        <div class="msg bot">
+          <div class="msg-avatar">🤖</div>
+          <div class="msg-bubble">こんにちは、田中社長！何かお手伝いできますか？</div>
+        </div>
+      </div>
+      <div class="rich-menu">
+        <div class="rich-menu-label">▼ メニュー</div>
+        <div class="rich-menu-grid">
+          <button class="rich-btn" onclick="highlightMenu(this)">💰 経費精算</button>
+          <button class="rich-btn" onclick="highlightMenu(this)">🛒 注文代行</button>
+          <button class="rich-btn" onclick="highlightMenu(this)">⏱ 勤怠報告</button>
+          <button class="rich-btn" onclick="highlightMenu(this)">📅 日程調整</button>
+          <button class="rich-btn active" id="menuCash" onclick="highlightMenu(this)">💹 資金繰り</button>
+          <button class="rich-btn" onclick="highlightMenu(this)">💬 その他</button>
+        </div>
+      </div>
+    </div>
+    <button class="start-btn" onclick="runDemo()">▶ デモを開始</button>
+  </div>
+
+  <!-- ===== CENTER: AI PROCESSING ===== -->
+  <div class="col col-ai">
+    <div class="col-header">AI Processing</div>
+    <div class="steps-area">
+      <div class="step" id="step0">
+        <span class="step-icon">🏦</span>
+        <span>銀行APIから残高データを取得中...<br><small style="font-size:10.5px;">（3口座）</small></span>
+        <span class="step-status" id="status0"></span>
+      </div>
+      <div class="step" id="step1">
+        <span class="step-icon">📊</span>
+        <span>freeeから売掛金・買掛金データを取得</span>
+        <span class="step-status" id="status1"></span>
+      </div>
+      <div class="step" id="step2">
+        <span class="step-icon">🗓️</span>
+        <span>支払いスケジュールと突合中...</span>
+        <span class="step-status" id="status2"></span>
+      </div>
+      <div class="step" id="step3">
+        <span class="step-icon">📈</span>
+        <span>3ヶ月先まで資金繰りを予測中...</span>
+        <span class="step-status" id="status3"></span>
+      </div>
+      <div class="step" id="step4">
+        <span class="step-icon">⚠️</span>
+        <span>リスク検出:<br><strong style="font-size:11px;color:#dc2626;">4月末に残高が危険水準に</strong></span>
+        <span class="step-status" id="status4"></span>
+      </div>
+      <div class="step" id="step5">
+        <span class="step-icon">✅</span>
+        <span>財務ダッシュボードを更新完了</span>
+        <span class="step-status" id="status5"></span>
+      </div>
+    </div>
+    <div class="ai-footer">
+      <div class="ai-label">処理進捗</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== RIGHT: FINANCIAL DASHBOARD ===== -->
+  <div class="col col-dash">
+    <div class="col-header">財務ダッシュボード</div>
+    <div class="dash-area">
+
+      <!-- Bank Cards -->
+      <div class="bank-cards">
+        <div class="bank-card blue">
+          <div class="bank-card-icon">🏦</div>
+          <div class="bank-card-name">みずほ銀行</div>
+          <div class="bank-card-amount" id="amt0">¥0</div>
+          <div class="bank-card-sub">普通預金</div>
+        </div>
+        <div class="bank-card red">
+          <div class="bank-card-icon">🏦</div>
+          <div class="bank-card-name">三菱UFJ</div>
+          <div class="bank-card-amount" id="amt1">¥0</div>
+          <div class="bank-card-sub">普通預金</div>
+        </div>
+        <div class="bank-card purple">
+          <div class="bank-card-icon">💰</div>
+          <div class="bank-card-name">合計残高</div>
+          <div class="bank-card-amount" id="amt2">¥0</div>
+          <div class="bank-card-sub">3口座合計</div>
+        </div>
+      </div>
+
+      <!-- Chart Section -->
+      <div class="chart-section">
+        <div class="chart-title">
+          📈 資金繰り予測（3〜6月）
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#3b82f6;"></div>
+            収入
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#f97316;"></div>
+            支出
+          </div>
+          <div class="legend-item">
+            <div class="legend-line" style="background:#16a34a;"></div>
+            残高（折れ線）
+          </div>
+        </div>
+        <div class="chart-body" id="chartBody">
+          <div class="chart-y-labels">
+            <div class="chart-y-label">¥20M</div>
+            <div class="chart-y-label">¥15M</div>
+            <div class="chart-y-label">¥10M</div>
+            <div class="chart-y-label">¥5M</div>
+            <div class="chart-y-label">¥0</div>
+          </div>
+          <!-- Month groups -->
+          <div class="month-group" id="mg0">
+            <div class="bars-row" id="br0">
+              <div class="bar bar-income" id="bi0" data-val="15"><div class="bar-tooltip">収入 ¥15M</div></div>
+              <div class="bar bar-expense" id="be0" data-val="12"><div class="bar-tooltip">支出 ¥12M</div></div>
+            </div>
+            <div class="month-label">3月</div>
+          </div>
+          <div class="month-group danger" id="mg1">
+            <div class="danger-mark" id="dm1">⚠️</div>
+            <div class="bars-row" id="br1">
+              <div class="bar bar-income" id="bi1" data-val="8"><div class="bar-tooltip">収入 ¥8M</div></div>
+              <div class="bar bar-expense" id="be1" data-val="14"><div class="bar-tooltip">支出 ¥14M</div></div>
+            </div>
+            <div class="month-label" style="color:#ef4444;font-weight:700;">4月 ⚡</div>
+          </div>
+          <div class="month-group" id="mg2">
+            <div class="bars-row" id="br2">
+              <div class="bar bar-income" id="bi2" data-val="12"><div class="bar-tooltip">収入 ¥12M</div></div>
+              <div class="bar bar-expense" id="be2" data-val="10"><div class="bar-tooltip">支出 ¥10M</div></div>
+            </div>
+            <div class="month-label">5月</div>
+          </div>
+          <div class="month-group" id="mg3">
+            <div class="bars-row" id="br3">
+              <div class="bar bar-income" id="bi3" data-val="18"><div class="bar-tooltip">収入 ¥18M</div></div>
+              <div class="bar bar-expense" id="be3" data-val="11"><div class="bar-tooltip">支出 ¥11M</div></div>
+            </div>
+            <div class="month-label">6月</div>
+          </div>
+          <!-- SVG for balance line -->
+          <svg class="chart-svg-wrap" id="chartSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <polyline id="balanceLine" class="balance-line"
+              points=""
+              vector-effect="non-scaling-stroke"/>
+            <circle id="dot0" class="balance-dot" r="2.5"/>
+            <circle id="dot1" class="balance-dot" r="2.5" style="fill:#ef4444"/>
+            <circle id="dot2" class="balance-dot" r="2.5"/>
+            <circle id="dot3" class="balance-dot" r="2.5"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Alert Box -->
+      <div class="alert-box" id="alertBox">
+        <strong>⚠️ 資金繰りリスクを検出しました</strong>
+        4月末に残高が ¥5.8M まで低下します。<br>
+        売掛金 ¥3.2M の早期回収を推奨します。<br>
+        <span style="font-size:10.5px;color:#b91c1c;">▶ 取引先への請求督促をAIが代行できます</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== CHART DATA =====
+// maxVal = 20M → chart height represents 20M
+// balances: 3=11.8, 4=5.8, 5=7.8, 6=14.8
+const CHART_MAX = 20; // million
+const BAR_DATA = [
+  { income: 15, expense: 12 },
+  { income: 8,  expense: 14 },
+  { income: 12, expense: 10 },
+  { income: 18, expense: 11 },
+];
+const BALANCE = [11.8, 5.8, 7.8, 14.8];
+
+// ===== UTILITIES =====
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function addMsg(who, text) {
+  const chat = document.getElementById('lineChat');
+  const div = document.createElement('div');
+  div.className = 'msg ' + who;
+  const av = document.createElement('div');
+  av.className = 'msg-avatar';
+  av.textContent = who === 'bot' ? '🤖' : '👤';
+  const bub = document.createElement('div');
+  bub.className = 'msg-bubble';
+  bub.textContent = text;
+  if (who === 'bot') { div.appendChild(av); div.appendChild(bub); }
+  else               { div.appendChild(bub); div.appendChild(av); }
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function activateStep(i) {
+  document.querySelectorAll('.step').forEach((s, idx) => {
+    s.classList.remove('active');
+    if (idx < i) {
+      s.classList.add('done');
+      document.getElementById('status' + idx).innerHTML = '<span class="check">✓</span>';
+    }
+  });
+  const step = document.getElementById('step' + i);
+  step.classList.add('active');
+  document.getElementById('status' + i).innerHTML = '<span class="dot-anim"></span>';
+  const pct = Math.round(((i + 1) / 6) * 100);
+  document.getElementById('progressBar').style.width = pct + '%';
+}
+
+function completeAllSteps() {
+  document.querySelectorAll('.step').forEach((s, idx) => {
+    s.classList.remove('active');
+    s.classList.add('done');
+    document.getElementById('status' + idx).innerHTML = '<span class="check">✓</span>';
+  });
+  document.getElementById('progressBar').style.width = '100%';
+}
+
+// ===== COUNT UP =====
+function countUp(elId, target, duration) {
+  const el = document.getElementById(elId);
+  const start = Date.now();
+  const timer = setInterval(() => {
+    const elapsed = Date.now() - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+    const current = Math.floor(target * ease);
+    el.textContent = '¥' + current.toLocaleString();
+    if (progress >= 1) { clearInterval(timer); el.textContent = '¥' + target.toLocaleString(); }
+  }, 16);
+}
+
+function animateBankBalances() {
+  countUp('amt0', 8234000, 1600);
+  setTimeout(() => countUp('amt1', 3567000, 1600), 200);
+  setTimeout(() => countUp('amt2', 11801000, 1800), 400);
+}
+
+// ===== BAR CHART =====
+function getChartHeight() {
+  const body = document.getElementById('chartBody');
+  return body ? body.offsetHeight - 24 : 140; // minus bottom label area
+}
+
+function animateChart() {
+  const h = getChartHeight();
+
+  BAR_DATA.forEach((d, i) => {
+    const incH = Math.round((d.income / CHART_MAX) * h);
+    const expH = Math.round((d.expense / CHART_MAX) * h);
+    const biEl = document.getElementById('bi' + i);
+    const beEl = document.getElementById('be' + i);
+    // reset
+    biEl.style.transition = 'none';
+    beEl.style.transition = 'none';
+    biEl.style.height = '0px';
+    beEl.style.height = '0px';
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        biEl.style.transition = 'height 1s ease-out';
+        beEl.style.transition = 'height 1s ease-out';
+        setTimeout(() => {
+          biEl.style.height = incH + 'px';
+          beEl.style.height = expH + 'px';
+        }, i * 120);
+      });
+    });
+  });
+
+  // Draw balance line after bars start
+  setTimeout(() => drawBalanceLine(h), 900);
+}
+
+function drawBalanceLine(h) {
+  const svg = document.getElementById('chartSvg');
+  if (!svg) return;
+  const svgW = svg.clientWidth || 400;
+  const svgH = svg.clientHeight || h;
+
+  // x positions: centers of each month group (4 groups spread across width)
+  // approximate: groups are equal width
+  const groupW = svgW / 4;
+  const xs = [groupW * 0.5, groupW * 1.5, groupW * 2.5, groupW * 3.5];
+
+  // y: invert (SVG y=0 is top, chart y=0 is bottom)
+  const ys = BALANCE.map(b => svgH - (b / CHART_MAX) * svgH);
+
+  const pts = xs.map((x, i) => x + ',' + ys[i]).join(' ');
+  const line = document.getElementById('balanceLine');
+  line.setAttribute('points', pts);
+
+  // update dots
+  ['dot0','dot1','dot2','dot3'].forEach((id, i) => {
+    const dot = document.getElementById(id);
+    dot.setAttribute('cx', xs[i]);
+    dot.setAttribute('cy', ys[i]);
+    dot.classList.add('show');
+  });
+
+  // animate draw
+  const totalLen = 1000;
+  line.style.strokeDasharray = totalLen;
+  line.style.strokeDashoffset = totalLen;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      line.style.transition = 'stroke-dashoffset 1.4s ease-out';
+      line.style.strokeDashoffset = '0';
+    });
+  });
+
+  // Show danger mark
+  setTimeout(() => {
+    document.getElementById('dm1').classList.add('show');
+  }, 1200);
+}
+
+function showAlert() {
+  document.getElementById('alertBox').classList.add('show');
+}
+
+// ===== RESET =====
+function resetDemo() {
+  document.getElementById('lineChat').innerHTML = `
+    <div class="msg bot">
+      <div class="msg-avatar">🤖</div>
+      <div class="msg-bubble">こんにちは、田中社長！何かお手伝いできますか？</div>
+    </div>`;
+  document.querySelectorAll('.step').forEach((s, i) => {
+    s.classList.remove('active', 'done');
+    document.getElementById('status' + i).innerHTML = '';
+  });
+  document.getElementById('progressBar').style.width = '0%';
+
+  ['amt0','amt1','amt2'].forEach(id => { document.getElementById(id).textContent = '¥0'; });
+
+  // Reset bars
+  ['bi0','bi1','bi2','bi3','be0','be1','be2','be3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.transition = 'none'; el.style.height = '0px'; }
+  });
+
+  // Reset balance line
+  const line = document.getElementById('balanceLine');
+  if (line) { line.style.transition = 'none'; line.style.strokeDashoffset = '1000'; line.setAttribute('points', ''); }
+  ['dot0','dot1','dot2','dot3'].forEach(id => {
+    const d = document.getElementById(id);
+    if (d) d.classList.remove('show');
+  });
+  document.getElementById('dm1').classList.remove('show');
+  document.getElementById('alertBox').classList.remove('show');
+
+  document.querySelectorAll('.rich-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('menuCash').classList.add('active');
+}
+
+function highlightMenu(btn) {
+  document.querySelectorAll('.rich-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ===== MAIN DEMO =====
+async function runDemo() {
+  resetDemo();
+
+  await delay(600);
+  addMsg('user', '（リッチメニュー「💹 資金繰り」をタップ）');
+
+  await delay(1000);
+  addMsg('user', '今月の資金繰りを確認したい');
+
+  await delay(800);
+  addMsg('bot', 'データを収集します。少々お待ちください...');
+
+  // Step 0: bank API
+  await delay(1000);
+  activateStep(0);
+  animateBankBalances();
+
+  // Step 1: freee
+  await delay(2000);
+  activateStep(1);
+
+  // Step 2: payment schedule
+  await delay(1800);
+  activateStep(2);
+
+  // Step 3: forecast → animate chart
+  await delay(1800);
+  activateStep(3);
+  animateChart();
+
+  // Step 4: risk detection → alert
+  await delay(2200);
+  activateStep(4);
+  showAlert();
+
+  // Step 5: done
+  await delay(1800);
+  activateStep(5);
+  await delay(400);
+  completeAllSteps();
+
+  await delay(400);
+  addMsg('bot', 'ダッシュボードを更新しました！\n⚠️ 4月末が要注意です。\n売掛金の早期回収を検討してください。');
+}
+
+// ===== INIT =====
+// ensure bars start at 0
+['bi0','bi1','bi2','bi3','be0','be1','be2','be3'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.style.height = '0px';
+});
+</script>
+</body>
+</html>
