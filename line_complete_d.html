@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINE完結型（Pattern D） - 外部接続不要 | AI Shaker Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ===== HEADER ===== */
+  .app-header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    color: #fff;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .app-header h1 {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .app-header h1 .badge {
+    background: #06C755;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+  .header-tag {
+    background: rgba(139,92,246,0.25);
+    color: #c4b5fd;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(139,92,246,0.4);
+    white-space: nowrap;
+  }
+
+  /* ===== ARCH BANNER ===== */
+  .arch-banner {
+    background: #1e3a5f;
+    color: #93c5fd;
+    font-size: 11px;
+    padding: 5px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .arch-banner .pattern-badge {
+    margin-left: auto;
+    background: #7c3aed;
+    color: white;
+    padding: 1px 8px;
+    border-radius: 99px;
+    font-size: 10px;
+  }
+  .arch-banner .byok {
+    background: #065f46;
+    color: #6ee7b7;
+    padding: 1px 8px;
+    border-radius: 99px;
+    font-size: 10px;
+  }
+
+  /* ===== TAB BAR (mobile/tablet only) ===== */
+  .tab-bar {
+    display: none;
+    flex-shrink: 0;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    border: none;
+    background: transparent;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #94a3b8;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .tab-btn .tab-icon { font-size: 18px; }
+  .tab-btn.active { color: #7c3aed; border-bottom-color: #7c3aed; }
+
+  /* ===== MAIN LAYOUT ===== */
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  /* ===== COLUMN ===== */
+  .col {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-right: 1px solid #e2e8f0;
+  }
+  .col:last-child { border-right: none; }
+
+  .col-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .col-header-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .col-header-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1e293b;
+  }
+  .col-header-sub {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-left: auto;
+  }
+
+  .col-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* ===== LINE COLUMN ===== */
+  .line-col .col-header { background: #f0fdf4; }
+  .line-col .col-header-icon { background: #dcfce7; }
+
+  /* Rich Menu */
+  .rich-menu {
+    background: #f9fafb;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .rich-menu-label {
+    font-size: 10px;
+    color: #94a3b8;
+    padding: 6px 10px 4px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+  .rich-menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+  }
+  .menu-btn {
+    background: #fff;
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    color: #64748b;
+    font-weight: 500;
+    cursor: default;
+  }
+  .menu-btn .menu-icon { font-size: 18px; }
+  .menu-btn.active {
+    background: #ede9fe;
+    color: #6d28d9;
+    font-weight: 700;
+  }
+
+  /* Chat bubbles */
+  .chat-area {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chat-row {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+  }
+  .chat-row.user { justify-content: flex-end; }
+  .chat-row.bot { justify-content: flex-start; }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .avatar.user-av { background: #dbeafe; }
+  .avatar.bot-av { background: #dcfce7; }
+
+  .bubble {
+    max-width: 78%;
+    padding: 8px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    line-height: 1.55;
+    word-break: break-word;
+  }
+  .bubble.user {
+    background: #06C755;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .bubble.user.memo {
+    background: #047a3a;
+    font-family: monospace;
+    font-size: 11px;
+    white-space: pre-line;
+  }
+  .bubble.bot {
+    background: #fff;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    border-bottom-left-radius: 4px;
+  }
+  .bubble.bot.minutes {
+    background: #faf5ff;
+    border-color: #e9d5ff;
+    font-size: 11.5px;
+    white-space: pre-line;
+  }
+
+  .chat-time {
+    font-size: 10px;
+    color: #94a3b8;
+    align-self: flex-end;
+    flex-shrink: 0;
+  }
+
+  /* Typing indicator */
+  .typing {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    padding: 10px 14px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    border-bottom-left-radius: 4px;
+    width: fit-content;
+  }
+  .typing-dot {
+    width: 6px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 50%;
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-5px); }
+  }
+
+  /* ===== AI PROCESSING COLUMN ===== */
+  .ai-col .col-header { background: #f8f5ff; }
+  .ai-col .col-header-icon { background: #ede9fe; }
+
+  .ai-processing-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .ai-card-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #6d28d9;
+    padding: 8px 12px;
+    background: #faf5ff;
+    border-bottom: 1px solid #e9d5ff;
+    letter-spacing: 0.04em;
+  }
+
+  .step-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    opacity: 0.35;
+    transition: opacity 0.4s;
+  }
+  .step-item:last-child { border-bottom: none; }
+  .step-item.active { opacity: 1; }
+  .step-item.done { opacity: 1; }
+
+  .step-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .step-item.active .step-icon { background: #ede9fe; }
+  .step-item.done .step-icon { background: #dcfce7; }
+
+  .step-text { font-size: 12px; color: #475569; line-height: 1.4; }
+  .step-item.active .step-text { color: #1e293b; font-weight: 600; }
+  .step-item.done .step-text { color: #1e293b; }
+
+  .step-status {
+    margin-left: auto;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .step-item.active .step-status { color: #7c3aed; }
+  .step-item.done .step-status { color: #16a34a; }
+
+  /* Progress bar */
+  .progress-wrap {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 6px;
+  }
+  .progress-bar-bg {
+    height: 6px;
+    background: #f1f5f9;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #a855f7);
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+
+  /* ===== DATA STORE COLUMN ===== */
+  .data-col .col-header { background: #f8f0ff; }
+  .data-col .col-header-icon { background: #f3e8ff; }
+
+  .no-external-badge {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: #fff;
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .no-ext-icon { font-size: 28px; margin-bottom: 4px; }
+  .no-ext-title { font-size: 13px; font-weight: 700; margin-bottom: 2px; }
+  .no-ext-sub { font-size: 11px; opacity: 0.85; }
+
+  .history-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .history-title {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 7px 12px;
+    background: #faf5ff;
+    border-bottom: 1px solid #e9d5ff;
+    color: #6d28d9;
+    letter-spacing: 0.04em;
+  }
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  .history-item {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f8fafc;
+    font-size: 11px;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .history-item:last-child { border-bottom: none; }
+  .history-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .minutes-result {
+    background: #fff;
+    border: 1px solid #e9d5ff;
+    border-radius: 10px;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  .minutes-result.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .minutes-result-header {
+    background: linear-gradient(135deg, #6d28d9, #9333ea);
+    color: #fff;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .minutes-result-body {
+    padding: 10px 12px;
+    font-size: 11.5px;
+    line-height: 1.65;
+    color: #1e293b;
+    white-space: pre-line;
+  }
+
+  .lock-badge {
+    background: #1e293b;
+    color: #6ee7b7;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ===== DEMO CONTROLS ===== */
+  .demo-bar {
+    padding: 10px 16px;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .btn-demo {
+    background: linear-gradient(135deg, #7c3aed, #9333ea);
+    color: #fff;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-demo:hover { opacity: 0.85; }
+  .btn-demo:disabled { opacity: 0.5; cursor: default; }
+  .btn-reset {
+    background: #f1f5f9;
+    color: #475569;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .demo-status {
+    font-size: 12px;
+    color: #7c3aed;
+    font-weight: 600;
+    margin-left: auto;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1199px) {
+    .main {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .app-header { padding: 0 16px; }
+    .app-header h1 { font-size: 14px; }
+    .app-header h1 .badge { font-size: 10px; }
+    .header-tag { font-size: 11px; }
+    .col-body { padding: 8px; }
+  }
+
+  @media (max-width: 767px) {
+    body { overflow: auto; }
+
+    .main {
+      grid-template-columns: 1fr;
+      overflow: visible;
+    }
+
+    .tab-bar {
+      display: flex;
+    }
+
+    .col {
+      display: none;
+      border-right: none;
+      border-bottom: 1px solid #e2e8f0;
+      height: auto;
+      overflow: visible;
+    }
+    .col.tab-active { display: flex; }
+    .col-body { overflow: visible; max-height: none; }
+
+    .app-header h1 { font-size: 13px; }
+    .app-header h1 .badge { display: none; }
+    .header-tag { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="app-header">
+  <h1>
+    <span style="font-size:20px">🤖</span>
+    AI Shaker
+    <span class="badge">LINE Bot</span>
+    <span style="color:#94a3b8; font-weight:400; margin: 0 4px;">×</span>
+    LINE完結型（Pattern D） - 外部接続不要
+  </h1>
+  <span class="header-tag">Pattern D: LINE Complete</span>
+</header>
+
+<!-- ARCH BANNER -->
+<div class="arch-banner">
+  <span>🧠 Brain</span>
+  <span class="arrow">→ LINE解析・ルーティング →</span>
+  <span>🦾 Limb</span>
+  <span class="pattern-badge">Pattern D: LINE完結型</span>
+  <span class="byok">🔑 BYOK</span>
+</div>
+
+<!-- TAB BAR (mobile/tablet only) -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="line" onclick="switchTab('line')">
+    <span class="tab-icon">💬</span>LINE Bot
+  </button>
+  <button class="tab-btn" data-tab="ai" onclick="switchTab('ai')">
+    <span class="tab-icon">🤖</span>AI処理
+  </button>
+  <button class="tab-btn" data-tab="data" onclick="switchTab('data')">
+    <span class="tab-icon">📋</span>議事録
+  </button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ===== LEFT: LINE Bot ===== -->
+  <div class="col line-col tab-active" id="col-line">
+    <div class="col-header">
+      <div class="col-header-icon">💬</div>
+      <div class="col-header-title">LINE Bot</div>
+      <div class="col-header-sub">山田社長のトーク</div>
+    </div>
+    <div class="col-body" id="line-body">
+
+      <!-- Rich Menu -->
+      <div class="rich-menu">
+        <div class="rich-menu-label">リッチメニュー</div>
+        <div class="rich-menu-grid">
+          <div class="menu-btn"><span class="menu-icon">🧾</span>経費精算</div>
+          <div class="menu-btn"><span class="menu-icon">📍</span>勤怠報告</div>
+          <div class="menu-btn"><span class="menu-icon">📅</span>日程調整</div>
+          <div class="menu-btn"><span class="menu-icon">📊</span>レポート</div>
+          <div class="menu-btn"><span class="menu-icon">💹</span>資金繰り</div>
+          <div class="menu-btn active"><span class="menu-icon">💬</span>その他</div>
+        </div>
+      </div>
+
+      <!-- Chat Area -->
+      <div class="chat-area" id="chat-area">
+        <!-- Messages appear here -->
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== CENTER: AI Processing ===== -->
+  <div class="col ai-col" id="col-ai">
+    <div class="col-header">
+      <div class="col-header-icon">🧠</div>
+      <div class="col-header-title">AI Processing</div>
+      <div class="col-header-sub">Brain (クラウド)</div>
+    </div>
+    <div class="col-body">
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="progress-label">
+          <span>処理進捗</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progress-fill"></div>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div class="ai-processing-card">
+        <div class="ai-card-title">▶ 処理ステップ</div>
+        <div class="step-list" id="step-list">
+          <div class="step-item" id="step-0">
+            <div class="step-icon">💬</div>
+            <div class="step-text">テキストを受信・意図を解析</div>
+            <div class="step-status" id="step-status-0"></div>
+          </div>
+          <div class="step-item" id="step-1">
+            <div class="step-icon">🧠</div>
+            <div class="step-text">議事録フォーマットを判定</div>
+            <div class="step-status" id="step-status-1"></div>
+          </div>
+          <div class="step-item" id="step-2">
+            <div class="step-icon">✍️</div>
+            <div class="step-text">決定事項を構造化中...</div>
+            <div class="step-status" id="step-status-2"></div>
+          </div>
+          <div class="step-item" id="step-3">
+            <div class="step-icon">📋</div>
+            <div class="step-text">ToDo・担当者・期限を抽出</div>
+            <div class="step-status" id="step-status-3"></div>
+          </div>
+          <div class="step-item" id="step-4">
+            <div class="step-icon">📝</div>
+            <div class="step-text">議事録を整形中...</div>
+            <div class="step-status" id="step-status-4"></div>
+          </div>
+          <div class="step-item" id="step-5">
+            <div class="step-icon">✅</div>
+            <div class="step-text">LINE上で返信完了（外部システム不使用）</div>
+            <div class="step-status" id="step-status-5"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No External Info -->
+      <div class="ai-processing-card">
+        <div class="ai-card-title">🔒 外部連携なし</div>
+        <div style="padding:10px 12px; font-size:11px; color:#475569; line-height:1.6;">
+          このデモではデータが外部APIやデータベースへ送信されることはありません。<br>
+          すべての処理はLINEのやりとりの中で完結します。
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== RIGHT: LINE Data Store ===== -->
+  <div class="col data-col" id="col-data">
+    <div class="col-header">
+      <div class="col-header-icon">📋</div>
+      <div class="col-header-title">LINE データストア</div>
+      <div class="col-header-sub">外部システム不使用</div>
+    </div>
+    <div class="col-body">
+
+      <!-- No External Badge -->
+      <div class="no-external-badge">
+        <div class="no-ext-icon">🔒</div>
+        <div class="no-ext-title">外部システム不使用</div>
+        <div class="no-ext-sub">データはLINE内のみで処理・保存</div>
+      </div>
+
+      <!-- History -->
+      <div class="history-card">
+        <div class="history-title">📨 LINEトーク履歴</div>
+        <div class="history-list" id="history-list">
+          <div class="history-item">
+            <div class="history-dot" style="background:#06C755;"></div>
+            <span>9:12 — 山田社長がメニューを開く</span>
+          </div>
+          <div class="history-item">
+            <div class="history-dot" style="background:#06C755;"></div>
+            <span>9:13 — 「その他」をタップ</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Minutes Result -->
+      <div class="minutes-result" id="minutes-result">
+        <div class="minutes-result-header">📋 整形済み議事録（AI返信）</div>
+        <div class="minutes-result-body" id="minutes-body"></div>
+      </div>
+
+      <!-- Lock Badge -->
+      <div class="lock-badge">
+        <span>🔒</span>
+        <span>データはLINE内のみに保存</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- DEMO CONTROLS -->
+<div class="demo-bar">
+  <button class="btn-demo" id="btn-demo" onclick="startDemo()">▶ デモを開始</button>
+  <button class="btn-reset" onclick="resetDemo()">リセット</button>
+  <div class="demo-status" id="demo-status"></div>
+</div>
+
+<script>
+  let demoRunning = false;
+  let demoTimer = null;
+
+  const MEETING_MEMO = `参加者：田中・鈴木・佐藤
+決定事項：
+・来月から週次MTGを毎月曜10時に変更
+・Q2目標は前年比120%
+・採用は3名追加
+担当：田中がQ2計画書作成（期限4/15）`;
+
+  const MINUTES_TEXT = `📋 議事録（2026/03/18）
+
+✅ 決定事項
+・週次MTG: 毎週月曜10:00〜
+・Q2目標: 前年比120%
+・採用: 3名追加
+
+📌 ToDo
+・田中さん → Q2計画書作成（期限: 4/15）
+
+👥 参加者: 田中・鈴木・佐藤`;
+
+  const steps = [
+    { id: 0, label: '受信完了', pct: 15 },
+    { id: 1, label: '判定中...', pct: 30 },
+    { id: 2, label: '構造化中...', pct: 48 },
+    { id: 3, label: '抽出中...', pct: 65 },
+    { id: 4, label: '整形中...', pct: 82 },
+    { id: 5, label: '完了！', pct: 100 },
+  ];
+
+  const historyItems = [
+    { color: '#3b82f6', text: '9:14 — テキストメッセージを受信' },
+    { color: '#7c3aed', text: '9:14 — AI処理開始（Brain）' },
+    { color: '#f59e0b', text: '9:14 — 議事録メモを解析中...' },
+    { color: '#7c3aed', text: '9:14 — ToDo抽出・整形完了' },
+    { color: '#06C755', text: '9:14 — LINE返信完了（外部接続なし）' },
+  ];
+
+  function addBubble(type, text, isMemo, isMinutes) {
+    const chatArea = document.getElementById('chat-area');
+    const row = document.createElement('div');
+    row.className = 'chat-row ' + type;
+
+    if (type === 'user') {
+      row.innerHTML = `
+        <div class="bubble user ${isMemo ? 'memo' : ''}">${text}</div>
+        <div class="chat-time">9:14</div>
+        <div class="avatar user-av">👤</div>
+      `;
+    } else {
+      row.innerHTML = `
+        <div class="avatar bot-av">🤖</div>
+        <div class="bubble bot ${isMinutes ? 'minutes' : ''}">${text}</div>
+        <div class="chat-time">9:14</div>
+      `;
+    }
+
+    chatArea.appendChild(row);
+    chatArea.scrollTop = chatArea.scrollHeight;
+    return row;
+  }
+
+  function addTyping() {
+    const chatArea = document.getElementById('chat-area');
+    const row = document.createElement('div');
+    row.className = 'chat-row bot';
+    row.id = 'typing-indicator';
+    row.innerHTML = `
+      <div class="avatar bot-av">🤖</div>
+      <div class="typing">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>
+    `;
+    chatArea.appendChild(row);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typing-indicator');
+    if (el) el.remove();
+  }
+
+  function activateStep(idx) {
+    // Mark all previous as done
+    for (let i = 0; i < idx; i++) {
+      const el = document.getElementById('step-' + i);
+      el.classList.remove('active');
+      el.classList.add('done');
+      document.getElementById('step-status-' + i).textContent = '✓';
+    }
+    // Activate current
+    const cur = document.getElementById('step-' + idx);
+    cur.classList.add('active');
+    document.getElementById('step-status-' + idx).textContent = steps[idx].label;
+
+    // Progress
+    const pct = steps[idx].pct;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-pct').textContent = pct + '%';
+  }
+
+  function addHistoryItem(item) {
+    const list = document.getElementById('history-list');
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.innerHTML = `<div class="history-dot" style="background:${item.color};"></div><span>${item.text}</span>`;
+    list.appendChild(div);
+    list.scrollTop = list.scrollHeight;
+  }
+
+  function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  async function startDemo() {
+    if (demoRunning) return;
+    demoRunning = true;
+    document.getElementById('btn-demo').disabled = true;
+    document.getElementById('demo-status').textContent = '処理中...';
+
+    const chatArea = document.getElementById('chat-area');
+    chatArea.innerHTML = '';
+
+    // Switch to LINE tab on mobile if needed
+    const w = window.innerWidth;
+
+    // Step 1: User sends request message
+    await delay(400);
+    addBubble('user', '今日の会議の議事録をまとめて', false, false);
+    await delay(800);
+
+    // Step 2: User pastes memo
+    addBubble('user', MEETING_MEMO, true, false);
+    await delay(600);
+
+    // Step 3: AI typing
+    addTyping();
+    await delay(500);
+
+    // Step 4: Activate AI steps one by one
+    activateStep(0);
+    addHistoryItem(historyItems[0]);
+    await delay(700);
+
+    activateStep(1);
+    addHistoryItem(historyItems[1]);
+    await delay(800);
+
+    activateStep(2);
+    await delay(900);
+
+    activateStep(3);
+    addHistoryItem(historyItems[2]);
+    await delay(800);
+
+    activateStep(4);
+    await delay(900);
+
+    // Step 5: Final step
+    activateStep(5);
+    addHistoryItem(historyItems[3]);
+    await delay(600);
+
+    // Done all steps
+    const lastStep = document.getElementById('step-5');
+    lastStep.classList.add('done');
+    lastStep.classList.remove('active');
+    document.getElementById('step-status-5').textContent = '✓';
+
+    addHistoryItem(historyItems[4]);
+
+    // Remove typing, show bot reply
+    removeTyping();
+    addBubble('bot', MINUTES_TEXT, false, true);
+    await delay(300);
+
+    // Show minutes in data store
+    const minutesResult = document.getElementById('minutes-result');
+    document.getElementById('minutes-body').textContent = MINUTES_TEXT;
+    minutesResult.classList.add('visible');
+
+    document.getElementById('demo-status').textContent = '完了！（外部API接続なし）';
+    document.getElementById('btn-demo').disabled = false;
+    demoRunning = false;
+  }
+
+  function resetDemo() {
+    demoRunning = false;
+    document.getElementById('btn-demo').disabled = false;
+    document.getElementById('demo-status').textContent = '';
+
+    // Clear chat
+    document.getElementById('chat-area').innerHTML = '';
+
+    // Reset steps
+    for (let i = 0; i < 6; i++) {
+      const el = document.getElementById('step-' + i);
+      el.classList.remove('active', 'done');
+      document.getElementById('step-status-' + i).textContent = '';
+    }
+
+    // Reset progress
+    document.getElementById('progress-fill').style.width = '0%';
+    document.getElementById('progress-pct').textContent = '0%';
+
+    // Reset history
+    const list = document.getElementById('history-list');
+    list.innerHTML = `
+      <div class="history-item">
+        <div class="history-dot" style="background:#06C755;"></div>
+        <span>9:12 — 山田社長がメニューを開く</span>
+      </div>
+      <div class="history-item">
+        <div class="history-dot" style="background:#06C755;"></div>
+        <span>9:13 — 「その他」をタップ</span>
+      </div>
+    `;
+
+    // Reset minutes
+    const mr = document.getElementById('minutes-result');
+    mr.classList.remove('visible');
+    document.getElementById('minutes-body').textContent = '';
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.col').forEach(c => c.classList.remove('tab-active'));
+
+    document.querySelector(`[data-tab="${tab}"]`).classList.add('active');
+    const map = { line: 'col-line', ai: 'col-ai', data: 'col-data' };
+    document.getElementById(map[tab]).classList.add('tab-active');
+  }
+</script>
+</body>
+</html>

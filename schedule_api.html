@@ -52,6 +52,33 @@
     flex-shrink: 0;
   }
 
+  /* ===== ARCH BANNER ===== */
+  .arch-banner {
+    background: #1e3a5f;
+    color: #93c5fd;
+    font-size: 11px;
+    padding: 5px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .arch-banner .pattern-badge {
+    margin-left: auto;
+    background: #3b82f6;
+    color: white;
+    padding: 1px 8px;
+    border-radius: 99px;
+    font-size: 10px;
+  }
+  .arch-banner .byok {
+    background: #065f46;
+    color: #6ee7b7;
+    padding: 1px 8px;
+    border-radius: 99px;
+    font-size: 10px;
+  }
+
   /* ===== TAB BAR (mobile/tablet only) ===== */
   .tab-bar {
     display: none;
@@ -565,6 +592,15 @@
   <h1>日程調整 → Google Calendar API 連携デモ</h1>
   <span class="badge">LIVE DEMO</span>
 </header>
+
+<!-- ARCH BANNER -->
+<div class="arch-banner">
+  <span>🧠 Brain</span>
+  <span class="arrow">→ LINE解析・ルーティング →</span>
+  <span>🦾 Limb</span>
+  <span class="pattern-badge">Pattern A: API直接連携（freee/Calendar等）</span>
+  <span class="byok">🔑 BYOK</span>
+</div>
 
 <!-- TAB BAR (mobile/tablet only) -->
 <div class="tab-bar" id="tabBar">
