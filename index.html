@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Shaker - デモ一覧</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #06C755, #3b82f6);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .subtitle {
+      font-size: 15px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 960px;
+      width: 100%;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 24px;
+      border: 1px solid #e2e8f0;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.10);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .card-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .badge-api { background: #dbeafe; color: #1d4ed8; }
+    .badge-sheets { background: #dcfce7; color: #166534; }
+    .badge-legacy { background: #fef3c7; color: #92400e; }
+
+    .card-desc {
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    .card-flow {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #94a3b8;
+      flex-wrap: wrap;
+    }
+
+    .flow-step {
+      background: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 99px;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .flow-arrow { color: #cbd5e1; }
+
+    .card-footer {
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .play-btn {
+      font-size: 12px;
+      font-weight: 600;
+      color: #3b82f6;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .play-btn::before {
+      content: '▶';
+      font-size: 10px;
+    }
+
+    .system-tag {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+
+    footer {
+      margin-top: 56px;
+      text-align: center;
+      color: #94a3b8;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">
+      <div class="logo-icon">🤖</div>
+      <div class="logo-text">AI Shaker</div>
+    </div>
+    <p class="subtitle">LINEからAIが処理し、各システムに自動連携する様子をインタラクティブに体験できるデモです。<br>カードをクリックして「デモを開始」ボタンを押してください。</p>
+  </header>
+
+  <div class="grid">
+
+    <a class="card" href="expense_freee.html">
+      <div class="card-header">
+        <div class="card-icon" style="background:#dbeafe;">🧾</div>
+        <div class="card-title">経費精算</div>
+        <span class="card-badge badge-api">API連携</span>
+      </div>
+      <div class="card-desc">領収書を送るだけでAIがOCR解析し、freeeに仕訳を自動作成します。</div>
+      <div class="card-flow">
+        <span class="flow-step">LINE</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">OCR</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">freee</span>
+      </div>
+      <div class="card-footer">
+        <span class="play-btn">デモを見る</span>
+        <span class="system-tag">freee</span>
+      </div>
+    </a>
+
+    <a class="card" href="expense_sheets.html">
+      <div class="card-header">
+        <div class="card-icon" style="background:#dcfce7;">📊</div>
+        <div class="card-title">経費精算</div>
+        <span class="card-badge badge-sheets">Sheets連携</span>
+      </div>
+      <div class="card-desc">領収書をスキャンしてGoogle Sheetsの経費台帳に自動追記します。</div>
+      <div class="card-flow">
+        <span class="flow-step">LINE</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">OCR</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Sheets</span>
+      </div>
+      <div class="card-footer">
+        <span class="play-btn">デモを見る</span>
+        <span class="system-tag">Google Sheets</span>
+      </div>
+    </a>
+
+    <a class="card" href="order_legacy.html">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fef3c7;">📠</div>
+        <div class="card-title">注文代行</div>
+        <span class="card-badge badge-legacy">RPA自動入力</span>
+      </div>
+      <div class="card-desc">手書きFAXをAIが解析し、レガシーシステムへRPAで自動入力します。</div>
+      <div class="card-flow">
+        <span class="flow-step">FAX</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">AI解析</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">基幹系</span>
+      </div>
+      <div class="card-footer">
+        <span class="play-btn">デモを見る</span>
+        <span class="system-tag">レガシーシステム</span>
+      </div>
+    </a>
+
+    <a class="card" href="attendance_sheets.html">
+      <div class="card-header">
+        <div class="card-icon" style="background:#f0fdf4;">📍</div>
+        <div class="card-title">勤怠報告</div>
+        <span class="card-badge badge-sheets">Sheets連携</span>
+      </div>
+      <div class="card-desc">GPS位置情報を送るだけでAIが現場を特定し、出勤簿に自動記録します。</div>
+      <div class="card-flow">
+        <span class="flow-step">GPS</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">現場特定</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">出勤簿</span>
+      </div>
+      <div class="card-footer">
+        <span class="play-btn">デモを見る</span>
+        <span class="system-tag">Google Sheets</span>
+      </div>
+    </a>
+
+    <a class="card" href="schedule_api.html">
+      <div class="card-header">
+        <div class="card-icon" style="background:#ede9fe;">📅</div>
+        <div class="card-title">日程調整</div>
+        <span class="card-badge badge-api">API連携</span>
+      </div>
+      <div class="card-desc">「来週木曜で調整して」と送るだけでカレンダーを確認し、仮予定を自動確保します。</div>
+      <div class="card-flow">
+        <span class="flow-step">LINE</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">空き確認</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">Calendar</span>
+      </div>
+      <div class="card-footer">
+        <span class="play-btn">デモを見る</span>
+        <span class="system-tag">Google Calendar</span>
+      </div>
+    </a>
+
+    <a class="card" href="cashflow_api.html">
+      <div class="card-header">
+        <div class="card-icon" style="background:#fce7f3;">💹</div>
+        <div class="card-title">資金繰り</div>
+        <span class="card-badge badge-api">API連携</span>
+      </div>
+      <div class="card-desc">銀行・会計データを自動収集し、3ヶ月先までの資金繰りを予測・可視化します。</div>
+      <div class="card-flow">
+        <span class="flow-step">銀行API</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">AI予測</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-step">ダッシュボード</span>
+      </div>
+      <div class="card-footer">
+        <span class="play-btn">デモを見る</span>
+        <span class="system-tag">財務ダッシュボード</span>
+      </div>
+    </a>
+
+  </div>
+
+  <footer>
+    Powered by AI Shaker &nbsp;|&nbsp; LINEから業務を自動化する
+  </footer>
+
+</body>
+</html>
