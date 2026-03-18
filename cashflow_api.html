@@ -643,6 +643,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      padding-bottom: 70px;
     }
 
     .col {
@@ -773,7 +774,9 @@
         </div>
       </div>
     </div>
-    <button class="start-btn" onclick="runDemo()">▶ デモを開始</button>
+    <div class="demo-btn-wrap">
+      <button class="start-btn" onclick="runDemo()">▶ デモを開始</button>
+    </div>
   </div>
 
   <!-- ===== CENTER: AI PROCESSING ===== -->
@@ -1198,6 +1201,34 @@ async function runDemo() {
   const el = document.getElementById(id);
   if (el) el.style.height = '0px';
 });
+
+// モバイルでデモボタンを画面下部に固定表示
+(function() {
+  function fixDemoBtn() {
+    if (window.innerWidth <= 1199) {
+      const wrap = document.querySelector('.demo-btn-wrap');
+      if (wrap && wrap.parentElement !== document.body) {
+        document.body.appendChild(wrap);
+        Object.assign(wrap.style, {
+          position: 'fixed',
+          bottom: '0',
+          left: '0',
+          right: '0',
+          zIndex: '999',
+          padding: '10px 16px 20px',
+          background: '#fff',
+          boxShadow: '0 -2px 12px rgba(0,0,0,0.12)',
+          borderTop: '1px solid #e2e8f0'
+        });
+      }
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fixDemoBtn);
+  } else {
+    fixDemoBtn();
+  }
+})();
 </script>
 </body>
 </html>

@@ -546,6 +546,7 @@
   @media (max-width: 1199px) {
     .main {
       grid-template-columns: 1fr 1fr 1fr;
+      padding-bottom: 70px;
     }
     .app-header { padding: 0 16px; }
     .app-header h1 { font-size: 14px; }
@@ -769,7 +770,7 @@
 </div>
 
 <!-- DEMO CONTROLS -->
-<div class="demo-bar">
+<div class="demo-bar demo-btn-wrap">
   <button class="btn-demo" id="btn-demo" onclick="startDemo()">▶ デモを開始</button>
   <button class="btn-reset" onclick="resetDemo()">リセット</button>
   <div class="demo-status" id="demo-status"></div>
@@ -1011,6 +1012,34 @@
     const map = { line: 'col-line', ai: 'col-ai', data: 'col-data' };
     document.getElementById(map[tab]).classList.add('tab-active');
   }
+
+// モバイルでデモボタンを画面下部に固定表示
+(function() {
+  function fixDemoBtn() {
+    if (window.innerWidth <= 1199) {
+      const wrap = document.querySelector('.demo-btn-wrap');
+      if (wrap && wrap.parentElement !== document.body) {
+        document.body.appendChild(wrap);
+        Object.assign(wrap.style, {
+          position: 'fixed',
+          bottom: '0',
+          left: '0',
+          right: '0',
+          zIndex: '999',
+          padding: '10px 16px 20px',
+          background: '#fff',
+          boxShadow: '0 -2px 12px rgba(0,0,0,0.12)',
+          borderTop: '1px solid #e2e8f0'
+        });
+      }
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fixDemoBtn);
+  } else {
+    fixDemoBtn();
+  }
+})();
 </script>
 </body>
 </html>
