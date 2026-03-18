@@ -34,6 +34,7 @@
     font-size: 22px;
     color: #06C755;
     letter-spacing: 1px;
+    flex-shrink: 0;
   }
   header h1 { font-size: 17px; font-weight: 700; letter-spacing: 0.5px; }
   header .badge {
@@ -44,6 +45,34 @@
     padding: 3px 10px;
     border-radius: 20px;
     font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  /* ===== TAB BAR (mobile/tablet only) ===== */
+  .tab-bar {
+    display: none;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    border: none;
+    background: transparent;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+    font-weight: 700;
   }
 
   /* ===== MAIN GRID ===== */
@@ -373,6 +402,14 @@
     min-height: 0;
     display: flex;
     flex-direction: column;
+    overflow-x: auto;
+  }
+  .chart-inner {
+    min-width: 280px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
   }
   .chart-title {
     font-size: 12px;
@@ -561,6 +598,95 @@
   }
   .alert-box.show { opacity: 1; transform: translateY(0); }
   .alert-box strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 4px; }
+
+  /* ===== RESPONSIVE: tablet & mobile ===== */
+  @media (max-width: 1199px) {
+    header {
+      padding: 10px 16px;
+      gap: 10px;
+    }
+    header .logo { font-size: 18px; }
+    header h1 { font-size: 13px; }
+
+    .tab-bar {
+      display: flex;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .col {
+      display: none;
+      width: 100%;
+      height: calc(100vh - 50px - 41px); /* header approx + tab bar */
+      flex-shrink: 0;
+    }
+    .col.active {
+      display: flex;
+    }
+
+    /* LINE column mobile adjustments */
+    .col-line {
+      border-right: none;
+    }
+    .line-phone {
+      margin: 8px;
+    }
+    .msg-bubble { font-size: 13px; }
+
+    /* Rich menu mobile: 2col x 3row, smaller */
+    .rich-btn {
+      font-size: 10px;
+      padding: 6px 3px;
+    }
+
+    /* AI column mobile */
+    .col-ai {
+      border-right: none;
+    }
+    .step { font-size: 13px; }
+
+    /* Dashboard mobile: bank cards縦並び */
+    .bank-cards {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    /* Chart: overflow scroll for small screens */
+    .chart-section {
+      overflow-x: auto;
+      min-height: 220px;
+    }
+    .chart-inner {
+      min-width: 280px;
+    }
+
+    .dash-area {
+      padding: 10px;
+      gap: 10px;
+    }
+  }
+
+  @media (max-width: 599px) {
+    header h1 {
+      font-size: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .tab-btn { font-size: 11px; padding: 9px 2px; }
+    .step { font-size: 12px; }
+    .rich-btn { font-size: 10px; }
+
+    /* Bank cards mobile: show as 1 column */
+    .bank-cards {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
 </head>
 <body>
@@ -572,11 +698,18 @@
   <span class="badge">LIVE DEMO</span>
 </header>
 
+<!-- TAB BAR (mobile/tablet only) -->
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="line" onclick="switchTab('line')">📱 LINE Bot</button>
+  <button class="tab-btn" data-tab="ai" onclick="switchTab('ai')">🤖 AI処理</button>
+  <button class="tab-btn" data-tab="system" onclick="switchTab('system')">🖥️ システム</button>
+</div>
+
 <!-- MAIN -->
 <div class="main">
 
   <!-- ===== LEFT: LINE BOT ===== -->
-  <div class="col col-line">
+  <div class="col col-line active" data-col="line">
     <div class="col-header">LINE Bot</div>
     <div class="line-phone">
       <div class="line-header">
@@ -608,7 +741,7 @@
   </div>
 
   <!-- ===== CENTER: AI PROCESSING ===== -->
-  <div class="col col-ai">
+  <div class="col col-ai" data-col="ai">
     <div class="col-header">AI Processing</div>
     <div class="steps-area">
       <div class="step" id="step0">
@@ -651,7 +784,7 @@
   </div>
 
   <!-- ===== RIGHT: FINANCIAL DASHBOARD ===== -->
-  <div class="col col-dash">
+  <div class="col col-dash" data-col="system">
     <div class="col-header">財務ダッシュボード</div>
     <div class="dash-area">
 
@@ -679,71 +812,73 @@
 
       <!-- Chart Section -->
       <div class="chart-section">
-        <div class="chart-title">
-          📈 資金繰り予測（3〜6月）
-        </div>
-        <div class="chart-legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#3b82f6;"></div>
-            収入
+        <div class="chart-inner">
+          <div class="chart-title">
+            📈 資金繰り予測（3〜6月）
           </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:#f97316;"></div>
-            支出
-          </div>
-          <div class="legend-item">
-            <div class="legend-line" style="background:#16a34a;"></div>
-            残高（折れ線）
-          </div>
-        </div>
-        <div class="chart-body" id="chartBody">
-          <div class="chart-y-labels">
-            <div class="chart-y-label">¥20M</div>
-            <div class="chart-y-label">¥15M</div>
-            <div class="chart-y-label">¥10M</div>
-            <div class="chart-y-label">¥5M</div>
-            <div class="chart-y-label">¥0</div>
-          </div>
-          <!-- Month groups -->
-          <div class="month-group" id="mg0">
-            <div class="bars-row" id="br0">
-              <div class="bar bar-income" id="bi0" data-val="15"><div class="bar-tooltip">収入 ¥15M</div></div>
-              <div class="bar bar-expense" id="be0" data-val="12"><div class="bar-tooltip">支出 ¥12M</div></div>
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#3b82f6;"></div>
+              収入
             </div>
-            <div class="month-label">3月</div>
-          </div>
-          <div class="month-group danger" id="mg1">
-            <div class="danger-mark" id="dm1">⚠️</div>
-            <div class="bars-row" id="br1">
-              <div class="bar bar-income" id="bi1" data-val="8"><div class="bar-tooltip">収入 ¥8M</div></div>
-              <div class="bar bar-expense" id="be1" data-val="14"><div class="bar-tooltip">支出 ¥14M</div></div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#f97316;"></div>
+              支出
             </div>
-            <div class="month-label" style="color:#ef4444;font-weight:700;">4月 ⚡</div>
-          </div>
-          <div class="month-group" id="mg2">
-            <div class="bars-row" id="br2">
-              <div class="bar bar-income" id="bi2" data-val="12"><div class="bar-tooltip">収入 ¥12M</div></div>
-              <div class="bar bar-expense" id="be2" data-val="10"><div class="bar-tooltip">支出 ¥10M</div></div>
+            <div class="legend-item">
+              <div class="legend-line" style="background:#16a34a;"></div>
+              残高（折れ線）
             </div>
-            <div class="month-label">5月</div>
           </div>
-          <div class="month-group" id="mg3">
-            <div class="bars-row" id="br3">
-              <div class="bar bar-income" id="bi3" data-val="18"><div class="bar-tooltip">収入 ¥18M</div></div>
-              <div class="bar bar-expense" id="be3" data-val="11"><div class="bar-tooltip">支出 ¥11M</div></div>
+          <div class="chart-body" id="chartBody">
+            <div class="chart-y-labels">
+              <div class="chart-y-label">¥20M</div>
+              <div class="chart-y-label">¥15M</div>
+              <div class="chart-y-label">¥10M</div>
+              <div class="chart-y-label">¥5M</div>
+              <div class="chart-y-label">¥0</div>
             </div>
-            <div class="month-label">6月</div>
+            <!-- Month groups -->
+            <div class="month-group" id="mg0">
+              <div class="bars-row" id="br0">
+                <div class="bar bar-income" id="bi0" data-val="15"><div class="bar-tooltip">収入 ¥15M</div></div>
+                <div class="bar bar-expense" id="be0" data-val="12"><div class="bar-tooltip">支出 ¥12M</div></div>
+              </div>
+              <div class="month-label">3月</div>
+            </div>
+            <div class="month-group danger" id="mg1">
+              <div class="danger-mark" id="dm1">⚠️</div>
+              <div class="bars-row" id="br1">
+                <div class="bar bar-income" id="bi1" data-val="8"><div class="bar-tooltip">収入 ¥8M</div></div>
+                <div class="bar bar-expense" id="be1" data-val="14"><div class="bar-tooltip">支出 ¥14M</div></div>
+              </div>
+              <div class="month-label" style="color:#ef4444;font-weight:700;">4月 ⚡</div>
+            </div>
+            <div class="month-group" id="mg2">
+              <div class="bars-row" id="br2">
+                <div class="bar bar-income" id="bi2" data-val="12"><div class="bar-tooltip">収入 ¥12M</div></div>
+                <div class="bar bar-expense" id="be2" data-val="10"><div class="bar-tooltip">支出 ¥10M</div></div>
+              </div>
+              <div class="month-label">5月</div>
+            </div>
+            <div class="month-group" id="mg3">
+              <div class="bars-row" id="br3">
+                <div class="bar bar-income" id="bi3" data-val="18"><div class="bar-tooltip">収入 ¥18M</div></div>
+                <div class="bar bar-expense" id="be3" data-val="11"><div class="bar-tooltip">支出 ¥11M</div></div>
+              </div>
+              <div class="month-label">6月</div>
+            </div>
+            <!-- SVG for balance line -->
+            <svg class="chart-svg-wrap" id="chartSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <polyline id="balanceLine" class="balance-line"
+                points=""
+                vector-effect="non-scaling-stroke"/>
+              <circle id="dot0" class="balance-dot" r="2.5"/>
+              <circle id="dot1" class="balance-dot" r="2.5" style="fill:#ef4444"/>
+              <circle id="dot2" class="balance-dot" r="2.5"/>
+              <circle id="dot3" class="balance-dot" r="2.5"/>
+            </svg>
           </div>
-          <!-- SVG for balance line -->
-          <svg class="chart-svg-wrap" id="chartSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <polyline id="balanceLine" class="balance-line"
-              points=""
-              vector-effect="non-scaling-stroke"/>
-            <circle id="dot0" class="balance-dot" r="2.5"/>
-            <circle id="dot1" class="balance-dot" r="2.5" style="fill:#ef4444"/>
-            <circle id="dot2" class="balance-dot" r="2.5"/>
-            <circle id="dot3" class="balance-dot" r="2.5"/>
-          </svg>
         </div>
       </div>
 
@@ -761,6 +896,16 @@
 </div>
 
 <script>
+// ===== TAB SWITCHING =====
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  document.querySelectorAll('.col').forEach(col => {
+    col.classList.toggle('active', col.dataset.col === tabName);
+  });
+}
+
 // ===== CHART DATA =====
 // maxVal = 20M → chart height represents 20M
 // balances: 3=11.8, 4=5.8, 5=7.8, 6=14.8
@@ -962,6 +1107,9 @@ function highlightMenu(btn) {
 async function runDemo() {
   resetDemo();
 
+  // モバイル: LINEタブを表示
+  if (window.innerWidth <= 1199) switchTab('line');
+
   await delay(600);
   addMsg('user', '（リッチメニュー「💹 資金繰り」をタップ）');
 
@@ -971,8 +1119,9 @@ async function runDemo() {
   await delay(800);
   addMsg('bot', 'データを収集します。少々お待ちください...');
 
-  // Step 0: bank API
+  // Step 0: bank API → AI処理タブへ切り替え
   await delay(1000);
+  if (window.innerWidth <= 1199) switchTab('ai');
   activateStep(0);
   animateBankBalances();
 
@@ -984,9 +1133,10 @@ async function runDemo() {
   await delay(1800);
   activateStep(2);
 
-  // Step 3: forecast → animate chart
+  // Step 3: forecast → animate chart → システムタブへ切り替え
   await delay(1800);
   activateStep(3);
+  if (window.innerWidth <= 1199) switchTab('system');
   animateChart();
 
   // Step 4: risk detection → alert
@@ -1000,7 +1150,9 @@ async function runDemo() {
   await delay(400);
   completeAllSteps();
 
+  // 最後にLINEタブへ戻って返信を表示
   await delay(400);
+  if (window.innerWidth <= 1199) switchTab('line');
   addMsg('bot', 'ダッシュボードを更新しました！\n⚠️ 4月末が要注意です。\n売掛金の早期回収を検討してください。');
 }
 

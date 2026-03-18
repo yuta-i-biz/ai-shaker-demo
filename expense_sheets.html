@@ -57,6 +57,37 @@
     padding: 4px 12px;
     border-radius: 20px;
     border: 1px solid rgba(34,197,94,0.35);
+    white-space: nowrap;
+  }
+
+  /* ===== TAB BAR (mobile/tablet only) ===== */
+  .tab-bar {
+    display: none;
+    background: #fff;
+    border-bottom: 2px solid #e2e8f0;
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: -2px;
+  }
+  .tab-btn.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
   }
 
   /* ===== MAIN LAYOUT ===== */
@@ -434,9 +465,10 @@
     font-weight: 700;
     box-shadow: 0 2px 6px rgba(52,168,83,0.3);
   }
-  .sheets-title-wrap { flex: 1; }
+  .sheets-title-wrap { flex: 1; min-width: 0; }
   .sheets-file-name {
     font-size: 14px; font-weight: 700; color: #1e293b;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   .sheets-file-meta {
     font-size: 11px; color: #64748b; margin-top: 1px;
@@ -454,6 +486,7 @@
     border-bottom: 2px solid #e2e8f0;
     margin-bottom: 0;
     flex-shrink: 0;
+    overflow-x: auto;
   }
   .sheet-tab {
     padding: 6px 14px;
@@ -465,6 +498,7 @@
     border: 1px solid transparent;
     border-bottom: none;
     margin-bottom: -2px;
+    white-space: nowrap;
   }
   .sheet-tab.active-sheet {
     background: #fff;
@@ -684,6 +718,114 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
   }
+
+  /* ===== RESPONSIVE: TABLET & MOBILE (max 1199px) ===== */
+  @media (max-width: 1199px) {
+    .app-header {
+      padding: 0 16px;
+      height: auto;
+      min-height: 52px;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    .app-header h1 {
+      font-size: 13px;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .app-header h1 .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+    }
+    .header-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+    }
+
+    .tab-bar {
+      display: flex;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .column {
+      display: none;
+      width: 100%;
+      flex: 1;
+      border-right: none;
+      border-top: none;
+      overflow: hidden;
+    }
+
+    .column.active {
+      display: flex;
+    }
+
+    /* col-header は非表示（タブバーが役割を担う） */
+    .col-header {
+      display: none;
+    }
+
+    /* LINE カラム モバイル調整 */
+    .line-name { font-size: 13px; }
+    .line-status { font-size: 10px; }
+    .bubble { font-size: 13px; }
+
+    .rich-btn {
+      padding: 8px 4px;
+      font-size: 11px;
+    }
+    .rich-btn .btn-icon { font-size: 14px; }
+
+    .demo-btn { font-size: 13px; padding: 11px; }
+
+    /* AI カラム モバイル調整 */
+    .ai-panel { padding: 14px; }
+    .ai-idle-msg { font-size: 13px; }
+    .step-label { font-size: 12px; }
+    .step-sub { font-size: 10px; }
+
+    /* Sheets カラム モバイル調整 */
+    .sheets-panel { padding: 10px; }
+    .sheets-file-name { font-size: 12px; }
+    .sheets-file-meta { font-size: 10px; }
+    .sheet-tab { font-size: 11px; padding: 5px 10px; }
+
+    /* スプレッドシートはスクロール可能に */
+    .ss-col-header-row,
+    .ss-header-row,
+    .ss-row {
+      grid-template-columns: 32px 76px 52px 130px 88px 64px 60px;
+    }
+    .ss-cell { font-size: 10.5px; padding: 5px 6px; }
+    .ss-col-head { font-size: 10px; padding: 5px 6px; }
+
+    .success-banner { font-size: 12px; padding: 9px 12px; }
+    .sheets-footer { font-size: 10px; padding: 6px 10px; }
+  }
+
+  @media (max-width: 480px) {
+    .app-header h1 {
+      font-size: 12px;
+    }
+    .tab-btn {
+      font-size: 12px;
+      padding: 8px 2px;
+    }
+    /* 小さい画面ではスプレッドシートをさらにコンパクトに */
+    .ss-col-header-row,
+    .ss-header-row,
+    .ss-row {
+      grid-template-columns: 28px 70px 46px 110px 82px 58px 54px;
+    }
+    .ss-cell { font-size: 10px; padding: 4px 4px; }
+  }
 </style>
 </head>
 <body>
@@ -700,11 +842,24 @@
   <span class="header-tag">Google Sheets Integration Demo</span>
 </header>
 
+<!-- TAB BAR (mobile/tablet only) -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="line" onclick="switchTab('line')">
+    📱 LINE Bot
+  </button>
+  <button class="tab-btn" data-tab="ai" onclick="switchTab('ai')">
+    🤖 AI処理
+  </button>
+  <button class="tab-btn" data-tab="system" onclick="switchTab('system')">
+    🖥️ システム
+  </button>
+</div>
+
 <!-- MAIN -->
 <main class="main">
 
   <!-- ===== LEFT: LINE ===== -->
-  <section class="column line-column">
+  <section class="column line-column active" data-col="line">
     <div class="col-header">
       <span class="dot dot-green"></span>
       LINE Bot UI
@@ -761,7 +916,7 @@
   </section>
 
   <!-- ===== CENTER: AI ===== -->
-  <section class="column ai-column">
+  <section class="column ai-column" data-col="ai">
     <div class="col-header">
       <span class="dot dot-blue"></span>
       AI Processing
@@ -778,7 +933,7 @@
   </section>
 
   <!-- ===== RIGHT: GOOGLE SHEETS ===== -->
-  <section class="column sheets-column">
+  <section class="column sheets-column" data-col="system">
     <div class="col-header">
       <span class="dot dot-sheets"></span>
       System Integration — Google Sheets
@@ -898,6 +1053,16 @@
 
   function delay(ms) {
     return new Promise(res => setTimeout(res, ms));
+  }
+
+  /* ===== タブ切り替え ===== */
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    document.querySelectorAll('.column').forEach(col => {
+      col.classList.toggle('active', col.dataset.col === tabName);
+    });
   }
 
   function addLineMessage(type, content) {
@@ -1028,6 +1193,9 @@
     `;
 
     document.querySelectorAll('.rich-btn').forEach(b => b.classList.remove('active'));
+
+    // タブをLINEに戻す
+    switchTab('line');
   }
 
   async function addSheetsRow() {
@@ -1088,6 +1256,9 @@
 
     await delay(400);
 
+    // LINEタブを表示（モバイル時）
+    switchTab('line');
+
     // リッチメニュー「経費精算」アクティブ
     document.getElementById('btn-keihi').classList.add('active');
 
@@ -1103,8 +1274,9 @@
     await delay(1200);
     addLineMessage('bot', '領収書を受け取りました！<br>AIが経費台帳への入力を開始します 🔄');
 
-    // AI処理開始
+    // AI処理開始: AIタブに切り替え
     await delay(800);
+    switchTab('ai');
     document.getElementById('aiIdle').style.display = 'none';
     document.getElementById('stepsList').style.display = 'flex';
     buildSteps();
@@ -1114,11 +1286,18 @@
       setStepActive(i);
       if (i > 0) setStepDone(i - 1);
 
+      // ステップ3（Sheets API接続）でシステムタブに切り替え
+      if (i === 3) {
+        switchTab('system');
+      }
+
       if (i === STEPS.length - 1) {
         await delay(1600);
         setStepDone(i);
         await addSheetsRow();
         addLineMessage('bot', '✅ Google Sheetsへの追記が完了しました！<br><b>接待費 ¥12,500</b> を48行目に登録しました。承認者に通知を送りました。');
+        await delay(400);
+        switchTab('line');
       }
     }
 

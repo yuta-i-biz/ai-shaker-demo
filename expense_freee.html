@@ -57,6 +57,37 @@
     padding: 4px 12px;
     border-radius: 20px;
     border: 1px solid rgba(59,130,246,0.4);
+    white-space: nowrap;
+  }
+
+  /* ===== TAB BAR (mobile/tablet only) ===== */
+  .tab-bar {
+    display: none;
+    background: #fff;
+    border-bottom: 2px solid #e2e8f0;
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: -2px;
+  }
+  .tab-btn.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
   }
 
   /* ===== MAIN LAYOUT ===== */
@@ -404,12 +435,6 @@
 
   .step-emoji { font-size: 15px; margin-right: 2px; }
 
-  /* OCR scan animation */
-  @keyframes scanline {
-    0% { top: 0; }
-    100% { top: 100%; }
-  }
-
   /* ===== RIGHT: FREEE COLUMN ===== */
   .freee-column { background: #fff; }
 
@@ -559,15 +584,6 @@
     flex-shrink: 0;
   }
 
-  /* 接続ライン */
-  .connection-line {
-    position: absolute;
-    width: 2px;
-    background: linear-gradient(to bottom, #3b82f6, transparent);
-    opacity: 0;
-    transition: opacity 0.5s;
-  }
-
   /* 完了バナー */
   .success-banner {
     display: none;
@@ -586,6 +602,104 @@
   }
   .success-banner.show { display: flex; }
 
+  /* ===== RESPONSIVE: TABLET & MOBILE (max 1199px) ===== */
+  @media (max-width: 1199px) {
+    .app-header {
+      padding: 0 16px;
+      height: auto;
+      min-height: 52px;
+      flex-wrap: wrap;
+      gap: 4px;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    .app-header h1 {
+      font-size: 13px;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .app-header h1 .badge {
+      font-size: 10px;
+      padding: 2px 6px;
+    }
+    .header-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+    }
+
+    .tab-bar {
+      display: flex;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .column {
+      display: none;
+      width: 100%;
+      flex: 1;
+      border-right: none;
+      border-top: none;
+      overflow: hidden;
+    }
+
+    .column.active {
+      display: flex;
+    }
+
+    /* col-header は非表示（タブバーが役割を担う） */
+    .col-header {
+      display: none;
+    }
+
+    /* LINE カラム モバイル調整 */
+    .line-name { font-size: 13px; }
+    .line-status { font-size: 10px; }
+
+    .bubble { font-size: 13px; }
+
+    .rich-btn {
+      padding: 8px 4px;
+      font-size: 11px;
+    }
+    .rich-btn .btn-icon { font-size: 14px; }
+
+    .demo-btn { font-size: 13px; padding: 11px; }
+
+    /* AI カラム モバイル調整 */
+    .ai-panel { padding: 14px; }
+    .ai-idle-msg { font-size: 13px; }
+    .step-label { font-size: 12px; }
+    .step-sub { font-size: 10px; }
+
+    /* freee カラム モバイル調整 */
+    .freee-panel { padding: 10px; }
+    .freee-table { font-size: 11px; }
+    .freee-table th { font-size: 10px; padding: 7px 6px; }
+    .freee-table td { padding: 7px 6px; font-size: 11px; }
+    .freee-logo { font-size: 17px; }
+    .freee-toolbar { padding: 6px 10px; gap: 6px; }
+    .freee-tab { font-size: 11px; padding: 3px 8px; }
+    .success-banner { font-size: 12px; padding: 10px 12px; }
+    .freee-footer { font-size: 10px; padding: 6px 10px; }
+  }
+
+  @media (max-width: 480px) {
+    .app-header h1 {
+      font-size: 12px;
+    }
+    .tab-btn {
+      font-size: 12px;
+      padding: 8px 2px;
+    }
+    .freee-table th:nth-child(3),
+    .freee-table td:nth-child(3) {
+      display: none;
+    }
+  }
 </style>
 </head>
 <body>
@@ -602,11 +716,24 @@
   <span class="header-tag">freee Integration Demo</span>
 </header>
 
+<!-- TAB BAR (mobile/tablet only) -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="line" onclick="switchTab('line')">
+    📱 LINE Bot
+  </button>
+  <button class="tab-btn" data-tab="ai" onclick="switchTab('ai')">
+    🤖 AI処理
+  </button>
+  <button class="tab-btn" data-tab="system" onclick="switchTab('system')">
+    🖥️ システム
+  </button>
+</div>
+
 <!-- MAIN -->
 <main class="main">
 
   <!-- ===== LEFT: LINE ===== -->
-  <section class="column line-column">
+  <section class="column line-column active" data-col="line">
     <div class="col-header">
       <span class="dot dot-green"></span>
       LINE Bot UI
@@ -664,7 +791,7 @@
   </section>
 
   <!-- ===== CENTER: AI ===== -->
-  <section class="column ai-column">
+  <section class="column ai-column" data-col="ai">
     <div class="col-header">
       <span class="dot dot-blue"></span>
       AI Processing
@@ -681,7 +808,7 @@
   </section>
 
   <!-- ===== RIGHT: freee ===== -->
-  <section class="column freee-column">
+  <section class="column freee-column" data-col="system">
     <div class="col-header">
       <span class="dot dot-purple"></span>
       System Integration — freee
@@ -764,6 +891,16 @@
 
   function delay(ms) {
     return new Promise(res => setTimeout(res, ms));
+  }
+
+  /* ===== タブ切り替え ===== */
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabName);
+    });
+    document.querySelectorAll('.column').forEach(col => {
+      col.classList.toggle('active', col.dataset.col === tabName);
+    });
   }
 
   function addLineMessage(type, content, isReceipt = false) {
@@ -877,6 +1014,9 @@
 
     // ボタン
     document.querySelectorAll('.rich-btn').forEach(b => b.classList.remove('active'));
+
+    // タブをLINEに戻す
+    switchTab('line');
   }
 
   function addFreeeRow() {
@@ -919,6 +1059,9 @@
 
     await delay(400);
 
+    // LINEタブを表示（モバイル時）
+    switchTab('line');
+
     // リッチメニュー「経費精算」アクティブ
     document.getElementById('btn-keihi').classList.add('active');
 
@@ -950,8 +1093,9 @@
     await delay(1200);
     addLineMessage('bot', '領収書を受け取りました！<br>AIが処理を開始します 🔄');
 
-    // AI処理開始
+    // AI処理開始: AIタブに切り替え
     await delay(800);
+    switchTab('ai');
     document.getElementById('aiIdle').style.display = 'none';
     document.getElementById('stepsList').style.display = 'flex';
     buildSteps();
@@ -961,12 +1105,20 @@
       setStepActive(i);
       if (i > 0) setStepDone(i - 1);
 
+      // ステップ4（freee API接続）でシステムタブに切り替え
+      if (i === 4) {
+        switchTab('system');
+      }
+
       // ステップ5完了後: freee行追加
       if (i === STEPS.length - 1) {
         await delay(1600);
         setStepDone(i);
         addFreeeRow();
+        // LINEメッセージ追加してLINEタブへ
         addLineMessage('bot', '✅ freeeへの登録が完了しました！<br><b>タクシー代 ¥3,200</b> を交通費として仕訳しました。承認をお待ちください。');
+        await delay(400);
+        switchTab('line');
       }
     }
 

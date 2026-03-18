@@ -175,6 +175,63 @@
       color: #94a3b8;
       font-size: 13px;
     }
+
+    /* ===== Responsive ===== */
+
+    /* タブレット: 768px〜1199px */
+    @media (min-width: 768px) and (max-width: 1199px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 100%;
+      }
+    }
+
+    /* モバイル: < 768px */
+    @media (max-width: 767px) {
+      body {
+        padding: 24px 16px;
+        align-items: stretch;
+      }
+
+      header {
+        margin-bottom: 32px;
+      }
+
+      .logo-text {
+        font-size: 24px;
+      }
+
+      .subtitle {
+        font-size: 13px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+        max-width: 100%;
+        gap: 16px;
+      }
+
+      .card {
+        padding: 20px 16px;
+        gap: 10px;
+      }
+
+      .card-title {
+        font-size: 14px;
+      }
+
+      .card-desc {
+        font-size: 12px;
+      }
+
+      .card-flow {
+        flex-wrap: wrap;
+      }
+
+      .flow-step {
+        white-space: nowrap;
+      }
+    }
   </style>
 </head>
 <body>

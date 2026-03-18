@@ -34,6 +34,7 @@
     font-size: 22px;
     color: #06C755;
     letter-spacing: 1px;
+    flex-shrink: 0;
   }
   header h1 {
     font-size: 17px;
@@ -48,6 +49,34 @@
     padding: 3px 10px;
     border-radius: 20px;
     font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  /* ===== TAB BAR (mobile/tablet only) ===== */
+  .tab-bar {
+    display: none;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 4px;
+    border: none;
+    background: transparent;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+    font-weight: 700;
   }
 
   /* ===== MAIN GRID ===== */
@@ -448,6 +477,84 @@
     margin: 0 auto;
     display: block;
   }
+
+  /* ===== RESPONSIVE: tablet & mobile ===== */
+  @media (max-width: 1199px) {
+    header {
+      padding: 10px 16px;
+      gap: 10px;
+    }
+    header .logo { font-size: 18px; }
+    header h1 { font-size: 13px; }
+
+    .tab-bar {
+      display: flex;
+    }
+
+    .main {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .col {
+      display: none;
+      width: 100%;
+      height: calc(100vh - 50px - 41px); /* header approx + tab bar */
+      flex-shrink: 0;
+    }
+    .col.active {
+      display: flex;
+    }
+
+    /* LINE column mobile adjustments */
+    .col-line {
+      border-right: none;
+      border-bottom: none;
+    }
+    .line-phone {
+      margin: 8px;
+    }
+    .msg-bubble { font-size: 13px; }
+
+    /* Rich menu mobile: 2col x 3row, smaller */
+    .rich-btn {
+      font-size: 10px;
+      padding: 6px 3px;
+    }
+
+    /* AI column mobile */
+    .col-ai {
+      border-right: none;
+    }
+    .step { font-size: 13px; }
+
+    /* Calendar column mobile */
+    .col-cal {
+      overflow: hidden;
+    }
+    .cal-area {
+      padding: 8px;
+    }
+    .cal-table-wrap {
+      overflow-x: auto;
+    }
+    .cal-nav-title { font-size: 13px; }
+    .cal-nav-sub { font-size: 10px; }
+  }
+
+  @media (max-width: 599px) {
+    header h1 {
+      font-size: 12px;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .tab-btn { font-size: 11px; padding: 9px 2px; }
+    .step { font-size: 12px; }
+    .rich-btn { font-size: 10px; }
+  }
 </style>
 </head>
 <body>
@@ -459,11 +566,18 @@
   <span class="badge">LIVE DEMO</span>
 </header>
 
+<!-- TAB BAR (mobile/tablet only) -->
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" data-tab="line" onclick="switchTab('line')">📱 LINE Bot</button>
+  <button class="tab-btn" data-tab="ai" onclick="switchTab('ai')">🤖 AI処理</button>
+  <button class="tab-btn" data-tab="system" onclick="switchTab('system')">🖥️ システム</button>
+</div>
+
 <!-- MAIN -->
 <div class="main">
 
   <!-- ===== LEFT: LINE BOT ===== -->
-  <div class="col col-line">
+  <div class="col col-line active" data-col="line">
     <div class="col-header">LINE Bot</div>
     <div class="line-phone">
       <!-- LINE Header -->
@@ -498,7 +612,7 @@
   </div>
 
   <!-- ===== CENTER: AI PROCESSING ===== -->
-  <div class="col col-ai">
+  <div class="col col-ai" data-col="ai">
     <div class="col-header">AI Processing</div>
     <div class="steps-area">
       <div class="step" id="step0">
@@ -541,7 +655,7 @@
   </div>
 
   <!-- ===== RIGHT: GOOGLE CALENDAR ===== -->
-  <div class="col col-cal">
+  <div class="col col-cal" data-col="system">
     <div class="cal-nav">
       <div>
         <div class="cal-nav-title">2026年3月　第4週</div>
@@ -601,6 +715,16 @@
 </div>
 
 <script>
+// ===== TAB SWITCHING =====
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabName);
+  });
+  document.querySelectorAll('.col').forEach(col => {
+    col.classList.toggle('active', col.dataset.col === tabName);
+  });
+}
+
 // ===== DATA =====
 const HOURS = ['9:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00'];
 // col index: 0=Mon,1=Tue,2=Wed,3=Thu,4=Fri,5=Sat,6=Sun
@@ -730,6 +854,9 @@ function highlightMenu(btn) {
 async function runDemo() {
   resetDemo();
 
+  // モバイル: LINEタブを表示
+  if (window.innerWidth <= 1199) switchTab('line');
+
   await delay(600);
   addMsg('user', '（リッチメニュー「📅 日程調整」をタップ）');
 
@@ -742,8 +869,9 @@ async function runDemo() {
   await delay(800);
   addMsg('bot', '承知しました！カレンダーを確認します...');
 
-  // Step 0: date parse
+  // Step 0: date parse → AI処理タブへ切り替え
   await delay(1000);
+  if (window.innerWidth <= 1199) switchTab('ai');
   activateStep(0);
 
   // Step 1: 社長カレンダー
@@ -758,9 +886,10 @@ async function runDemo() {
   await delay(1800);
   activateStep(3);
 
-  // Step 4: 文案生成 → show draft event
+  // Step 4: 文案生成 → show draft event → システムタブへ切り替え
   await delay(1800);
   activateStep(4);
+  if (window.innerWidth <= 1199) switchTab('system');
   showDraftEvent();
 
   // Step 5: 送信完了
@@ -769,7 +898,9 @@ async function runDemo() {
   await delay(600);
   completeAllSteps();
 
+  // 最後にLINEタブへ戻って返信文案を表示
   await delay(400);
+  if (window.innerWidth <= 1199) switchTab('line');
   addMsg('bot', `山田部長へ送る文案：\n「お疲れ様です。来週木曜日（3/26）14:00〜15:00はいかがでしょうか？\n場所は第二会議室を予約しました。ご確認よろしくお願いいたします。」`);
 }
 
