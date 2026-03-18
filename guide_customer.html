@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Shaker はじめてガイド</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== リセット & ベース ===== */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ===== カラー変数 ===== */
+    :root {
+      --line-green: #06C755;
+      --line-green-dark: #05a847;
+      --line-green-light: #e6f9ed;
+      --text-main: #1e293b;
+      --text-sub: #64748b;
+      --text-light: #94a3b8;
+      --bg-main: #f8fafc;
+      --bg-white: #ffffff;
+      --bg-card: #ffffff;
+      --border: #e2e8f0;
+      --shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.12);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    /* ===== ヘッダー ===== */
+    .header {
+      background: linear-gradient(135deg, #06C755 0%, #05a847 60%, #047a35 100%);
+      padding: 56px 16px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 180px;
+      height: 180px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+    }
+
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -60px;
+      left: -30px;
+      width: 220px;
+      height: 220px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 50%;
+    }
+
+    .header-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 6px 16px;
+      border-radius: 50px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+
+    .header-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .header-logo-icon {
+      width: 52px;
+      height: 52px;
+      background: #ffffff;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.3;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      position: relative;
+      z-index: 1;
+    }
+
+    .header-subtitle {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.92);
+      margin-top: 12px;
+      font-weight: 500;
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== セクション共通 ===== */
+    .section {
+      padding: 56px 0;
+    }
+
+    .section + .section {
+      border-top: 1px solid var(--border);
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--line-green);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .section-label::before {
+      content: '';
+      display: block;
+      width: 4px;
+      height: 16px;
+      background: var(--line-green);
+      border-radius: 2px;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+
+    .section-desc {
+      font-size: 15px;
+      color: var(--text-sub);
+      line-height: 1.8;
+      margin-bottom: 32px;
+    }
+
+    /* ===== セクション1: AI Shakerって何？ ===== */
+    .steps-row {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin-bottom: 32px;
+    }
+
+    .step-card {
+      flex: 1;
+      background: var(--bg-white);
+      border-radius: var(--radius-sm);
+      padding: 20px 12px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      position: relative;
+    }
+
+    .step-card:not(:last-child)::after {
+      content: '→';
+      position: absolute;
+      right: -14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 20px;
+      color: var(--line-green);
+      font-weight: 700;
+      z-index: 2;
+    }
+
+    .step-card:not(:last-child) {
+      margin-right: 20px;
+    }
+
+    .step-number {
+      display: inline-block;
+      width: 26px;
+      height: 26px;
+      background: var(--line-green);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 26px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .step-icon {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+      line-height: 1;
+    }
+
+    .step-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    .step-subtext {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-top: 4px;
+    }
+
+    .intro-note {
+      background: var(--line-green-light);
+      border-left: 4px solid var(--line-green);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 18px 20px;
+      font-size: 15px;
+      color: #1a4731;
+      line-height: 1.8;
+      font-weight: 500;
+    }
+
+    /* ===== セクション2: できること ===== */
+    .feature-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--bg-white);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: flex-start;
+      gap: 18px;
+      border: 1px solid var(--border);
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .feature-card:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon-wrap {
+      width: 60px;
+      height: 60px;
+      background: var(--line-green-light);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      flex-shrink: 0;
+    }
+
+    .feature-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .feature-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      color: var(--text-sub);
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
+    .feature-how {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #166534;
+    }
+
+    .feature-how::before {
+      content: '📱';
+      font-size: 13px;
+    }
+
+    /* ===== セクション3: 使い方 ===== */
+    .howto-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .howto-step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .howto-step-num {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      background: var(--line-green);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: 900;
+      box-shadow: 0 4px 12px rgba(6, 199, 85, 0.35);
+    }
+
+    .howto-step-body {
+      flex: 1;
+    }
+
+    .howto-step-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    /* LINE QR モック */
+    .line-add-mock {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .line-add-mock-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .line-logo-small {
+      width: 36px;
+      height: 36px;
+      background: var(--line-green);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .line-add-mock-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .qr-mock {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 16px;
+      position: relative;
+      border: 3px solid #1e293b;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .qr-mock-inner {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      gap: 1px;
+      padding: 6px;
+    }
+
+    .qr-dot {
+      background: #1e293b;
+      border-radius: 1px;
+    }
+
+    .qr-corner {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border: 4px solid #1e293b;
+      border-radius: 4px;
+    }
+
+    .qr-corner-tl { top: 6px; left: 6px; border-right: none; border-bottom: none; }
+    .qr-corner-tr { top: 6px; right: 6px; border-left: none; border-bottom: none; }
+    .qr-corner-bl { bottom: 6px; left: 6px; border-right: none; border-top: none; }
+
+    .qr-corner-dot {
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: #1e293b;
+      border-radius: 2px;
+    }
+
+    .qr-corner-dot-tl { top: 13px; left: 13px; }
+    .qr-corner-dot-tr { top: 13px; right: 13px; }
+    .qr-corner-dot-bl { bottom: 13px; left: 13px; }
+
+    .qr-label {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 16px;
+    }
+
+    .btn-line-add {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--line-green);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px 32px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(6, 199, 85, 0.4);
+      min-height: 52px;
+      width: 100%;
+      max-width: 280px;
+      transition: background 0.2s ease, transform 0.15s ease;
+    }
+
+    .btn-line-add:hover {
+      background: var(--line-green-dark);
+      transform: translateY(-1px);
+    }
+
+    /* LINE リッチメニュー モック */
+    .rich-menu-mock {
+      background: #1e2027;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .rich-menu-mock-bar {
+      background: #2a2d35;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rich-menu-mock-bar-dots {
+      display: flex;
+      gap: 5px;
+    }
+
+    .bar-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .bar-dot-r { background: #ff5f57; }
+    .bar-dot-y { background: #febc2e; }
+    .bar-dot-g { background: #28c840; }
+
+    .rich-menu-mock-bar-title {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      margin-left: 6px;
+    }
+
+    .rich-menu-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: #383b45;
+    }
+
+    .rich-menu-item {
+      background: #2a2d35;
+      padding: 18px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.15s ease;
+      min-height: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .rich-menu-item:hover {
+      background: #343740;
+    }
+
+    .rich-menu-item-icon {
+      font-size: 24px;
+    }
+
+    .rich-menu-item-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .rich-menu-note {
+      font-size: 14px;
+      color: var(--text-sub);
+      margin-top: 14px;
+      line-height: 1.7;
+    }
+
+    /* LINE チャット モック */
+    .chat-mock {
+      background: #95b5d1;
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+    }
+
+    .chat-mock-header {
+      background: #3b4c5e;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .chat-mock-avatar {
+      width: 36px;
+      height: 36px;
+      background: var(--line-green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .chat-mock-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .chat-mock-status {
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .chat-mock-body {
+      padding: 20px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .chat-bubble-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .chat-bubble-row.user {
+      flex-direction: row-reverse;
+    }
+
+    .chat-bubble-row.bot .chat-bubble-avatar {
+      width: 32px;
+      height: 32px;
+      background: var(--line-green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+      align-self: flex-end;
+    }
+
+    .chat-bubble {
+      max-width: 78%;
+      padding: 12px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .chat-bubble-row.user .chat-bubble {
+      background: #06C755;
+      color: #fff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .chat-bubble-row.bot .chat-bubble {
+      background: #fff;
+      color: var(--text-main);
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    .chat-time {
+      font-size: 10px;
+      color: rgba(255,255,255,0.7);
+      flex-shrink: 0;
+    }
+
+    .chat-bubble-row.bot .chat-time {
+      color: rgba(0,0,0,0.4);
+    }
+
+    /* ===== セクション4: よくある質問 ===== */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .faq-item {
+      background: var(--bg-white);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .faq-question {
+      width: 100%;
+      background: none;
+      border: none;
+      padding: 20px 20px;
+      text-align: left;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      min-height: 64px;
+      transition: background 0.15s ease;
+      line-height: 1.5;
+    }
+
+    .faq-question:hover {
+      background: #f8fafc;
+    }
+
+    .faq-q-icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: var(--line-green);
+      color: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 900;
+      margin-top: 1px;
+    }
+
+    .faq-q-text {
+      flex: 1;
+    }
+
+    .faq-chevron {
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      transition: transform 0.3s ease;
+      color: var(--text-light);
+    }
+
+    .faq-chevron svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .faq-item.open .faq-chevron {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer-wrap {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .faq-answer {
+      padding: 0 20px 20px 60px;
+      font-size: 15px;
+      color: var(--text-sub);
+      line-height: 1.8;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    /* ===== フッター ===== */
+    .footer {
+      background: #1e293b;
+      color: rgba(255,255,255,0.8);
+      padding: 48px 16px;
+      text-align: center;
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .footer-logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--line-green);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .footer-logo-text {
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+    }
+
+    .footer-msg {
+      font-size: 15px;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .footer-contact-note {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 50px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .footer-copyright {
+      margin-top: 32px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.35);
+    }
+
+    /* ===== ユーティリティ ===== */
+    .tag {
+      display: inline-block;
+      background: var(--line-green-light);
+      color: var(--line-green-dark);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 50px;
+      border: 1px solid #a7f3c8;
+    }
+
+    /* ===== 印刷スタイル ===== */
+    @media print {
+      body {
+        background: #fff;
+        font-size: 13px;
+      }
+
+      .container {
+        max-width: 100%;
+        padding: 0;
+      }
+
+      .header {
+        background: #06C755 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        padding: 32px 16px;
+      }
+
+      .feature-card:hover,
+      .howto-step-num {
+        transform: none;
+      }
+
+      .faq-answer-wrap {
+        max-height: none !important;
+      }
+
+      .faq-chevron {
+        display: none;
+      }
+
+      .footer {
+        background: #1e293b !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .chat-mock,
+      .rich-menu-mock {
+        break-inside: avoid;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .section {
+        padding: 32px 0;
+      }
+    }
+
+    /* ===== レスポンシブ（小画面調整） ===== */
+    @media (max-width: 420px) {
+      .header h1 {
+        font-size: 23px;
+      }
+
+      .steps-row {
+        gap: 0;
+      }
+
+      .step-card:not(:last-child) {
+        margin-right: 16px;
+      }
+
+      .step-card:not(:last-child)::after {
+        right: -11px;
+        font-size: 16px;
+      }
+
+      .step-icon {
+        font-size: 26px;
+      }
+
+      .step-text {
+        font-size: 12px;
+      }
+
+      .section-title {
+        font-size: 21px;
+      }
+
+      .feature-icon-wrap {
+        width: 50px;
+        height: 50px;
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== ヘッダー ===== -->
+  <header class="header">
+    <div class="container">
+      <div class="header-badge">📖 はじめてガイド</div>
+      <div class="header-logo">
+        <div class="header-logo-icon">🤝</div>
+      </div>
+      <h1>AI Shaker<br>はじめてガイド</h1>
+      <p class="header-subtitle">LINEを使うだけで、<br>面倒な仕事がぜんぶ自動になります</p>
+    </div>
+  </header>
+
+  <!-- ===== セクション1: AI Shakerって何？ ===== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label">AI Shaker とは</div>
+      <h2 class="section-title">AI Shakerって何？🤔</h2>
+      <p class="section-desc">たった3つのステップで仕事が自動になります。</p>
+
+      <div class="steps-row">
+        <div class="step-card">
+          <span class="step-number">1</span>
+          <span class="step-icon">💬</span>
+          <div class="step-text">LINEで<br>送るだけ</div>
+          <div class="step-subtext">いつものLINE</div>
+        </div>
+        <div class="step-card">
+          <span class="step-number">2</span>
+          <span class="step-icon">🤖</span>
+          <div class="step-text">AIが<br>自動で処理</div>
+          <div class="step-subtext">全部まかせてOK</div>
+        </div>
+        <div class="step-card">
+          <span class="step-number">3</span>
+          <span class="step-icon">✅</span>
+          <div class="step-text">会社の<br>システムに<br>自動入力</div>
+          <div class="step-subtext">入力不要！</div>
+        </div>
+      </div>
+
+      <div class="intro-note">
+        💡 むずかしい操作は一切ありません。いつも使っているLINEに送るだけで、AIが判断して、システムへの入力や集計を自動でやってくれます。
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== セクション2: できること ===== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label">できること</div>
+      <h2 class="section-title">こんなことができます ✨</h2>
+      <p class="section-desc">LINEから気軽に使える4つの機能をご紹介します。</p>
+
+      <div class="feature-cards">
+
+        <!-- カード1: 出退勤 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrap">🏃</div>
+          <div class="feature-content">
+            <div class="feature-title">出退勤の打刻</div>
+            <div class="feature-desc">
+              スマホのGPSで現場を自動判定。「出勤」を押すだけで記録完了。わざわざタイムカードを打ちに行く必要はありません。
+            </div>
+            <span class="feature-how">LINEのメニューから「勤怠」→「出勤」をタップ</span>
+          </div>
+        </div>
+
+        <!-- カード2: 経費申請 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrap">🧾</div>
+          <div class="feature-content">
+            <div class="feature-title">領収書の経費申請</div>
+            <div class="feature-desc">
+              レシートを写真で送るだけ。金額・日付・内容をAIが読み取って自動で登録。手書きの経費精算用紙は不要です。
+            </div>
+            <span class="feature-how">領収書を撮影してLINEに送信するだけ</span>
+          </div>
+        </div>
+
+        <!-- カード3: 進捗報告 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrap">📊</div>
+          <div class="feature-content">
+            <div class="feature-title">作業進捗の報告</div>
+            <div class="feature-desc">
+              テキストで「〇〇が60%終わりました」と送るだけ。上司に自動で共有されます。電話やメールで報告する手間が省けます。
+            </div>
+            <span class="feature-how">LINEに進捗をテキストで送信</span>
+          </div>
+        </div>
+
+        <!-- カード4: 日程調整 -->
+        <div class="feature-card">
+          <div class="feature-icon-wrap">📅</div>
+          <div class="feature-content">
+            <div class="feature-title">日程の調整</div>
+            <div class="feature-desc">
+              「来週の木曜に打ち合わせをお願いしたい」と送るだけ。カレンダーを確認して候補日を提案してくれます。
+            </div>
+            <span class="feature-how">LINEに希望を送るだけでAIが調整</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== セクション3: 使い方（3ステップ） ===== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label">使い方</div>
+      <h2 class="section-title">はじめ方はカンタン 3ステップ 🚀</h2>
+      <p class="section-desc">最初の設定は1分でできます。あとは普通にLINEを使うだけです。</p>
+
+      <div class="howto-steps">
+
+        <!-- STEP 1 -->
+        <div class="howto-step">
+          <div class="howto-step-num">1</div>
+          <div class="howto-step-body">
+            <div class="howto-step-title">LINE公式アカウントを友達追加</div>
+            <div class="line-add-mock">
+              <div class="line-add-mock-header">
+                <div class="line-logo-small">💬</div>
+                <div class="line-add-mock-name">AI Shaker 公式</div>
+              </div>
+              <!-- CSSで描いたQRコード風モック -->
+              <div class="qr-mock">
+                <div class="qr-corner qr-corner-tl"></div>
+                <div class="qr-corner qr-corner-tr"></div>
+                <div class="qr-corner qr-corner-bl"></div>
+                <div class="qr-corner-dot qr-corner-dot-tl"></div>
+                <div class="qr-corner-dot qr-corner-dot-tr"></div>
+                <div class="qr-corner-dot qr-corner-dot-bl"></div>
+                <!-- ドットパターン（中央エリア） -->
+                <svg width="100%" height="100%" viewBox="0 0 120 120" style="position:absolute;top:0;left:0;" aria-hidden="true">
+                  <!-- 中央部のランダムドット風パターン -->
+                  <rect x="42" y="14" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="54" y="14" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="66" y="14" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="78" y="14" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="42" y="26" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="66" y="26" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="42" y="38" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="54" y="38" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="78" y="38" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="14" y="42" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="26" y="42" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="38" y="42" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="50" y="42" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="62" y="42" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="74" y="42" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="86" y="42" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="100" y="42" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="14" y="54" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="38" y="54" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="62" y="54" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="86" y="54" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="100" y="54" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="26" y="66" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="50" y="66" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="74" y="66" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="14" y="78" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="38" y="78" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="62" y="78" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="86" y="78" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="50" y="78" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="26" y="90" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="50" y="90" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="74" y="90" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="100" y="90" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="38" y="100" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="62" y="100" width="6" height="6" fill="#1e293b" rx="1"/>
+                  <rect x="86" y="100" width="6" height="6" fill="#1e293b" rx="1"/>
+                </svg>
+              </div>
+              <p class="qr-label">QRコードをスキャン</p>
+              <button class="btn-line-add">
+                <span>➕</span> 友達追加する
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="howto-step">
+          <div class="howto-step-num">2</div>
+          <div class="howto-step-body">
+            <div class="howto-step-title">リッチメニューが表示される</div>
+            <div class="rich-menu-mock">
+              <div class="rich-menu-mock-bar">
+                <div class="rich-menu-mock-bar-dots">
+                  <div class="bar-dot bar-dot-r"></div>
+                  <div class="bar-dot bar-dot-y"></div>
+                  <div class="bar-dot bar-dot-g"></div>
+                </div>
+                <span class="rich-menu-mock-bar-title">AI Shaker 公式</span>
+              </div>
+              <div class="rich-menu-grid">
+                <div class="rich-menu-item">
+                  <span class="rich-menu-item-icon">🏃</span>
+                  <span class="rich-menu-item-label">勤怠</span>
+                </div>
+                <div class="rich-menu-item">
+                  <span class="rich-menu-item-icon">🧾</span>
+                  <span class="rich-menu-item-label">経費</span>
+                </div>
+                <div class="rich-menu-item">
+                  <span class="rich-menu-item-icon">📊</span>
+                  <span class="rich-menu-item-label">進捗</span>
+                </div>
+                <div class="rich-menu-item">
+                  <span class="rich-menu-item-icon">📅</span>
+                  <span class="rich-menu-item-label">日程調整</span>
+                </div>
+                <div class="rich-menu-item">
+                  <span class="rich-menu-item-icon">💹</span>
+                  <span class="rich-menu-item-label">資金繰り</span>
+                </div>
+                <div class="rich-menu-item">
+                  <span class="rich-menu-item-icon">💬</span>
+                  <span class="rich-menu-item-label">その他</span>
+                </div>
+              </div>
+            </div>
+            <p class="rich-menu-note">👆 画面の下にメニューが出てきます。やりたいことをタップしてください。</p>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="howto-step">
+          <div class="howto-step-num">3</div>
+          <div class="howto-step-body">
+            <div class="howto-step-title">AIが返信してくれる</div>
+            <div class="chat-mock">
+              <div class="chat-mock-header">
+                <div class="chat-mock-avatar">🤖</div>
+                <div>
+                  <div class="chat-mock-name">AI Shaker</div>
+                  <div class="chat-mock-status">オンライン</div>
+                </div>
+              </div>
+              <div class="chat-mock-body">
+                <!-- ユーザー -->
+                <div class="chat-bubble-row user">
+                  <span class="chat-time">08:47</span>
+                  <div class="chat-bubble">「出勤」をタップ</div>
+                </div>
+                <!-- ボット -->
+                <div class="chat-bubble-row bot">
+                  <div class="chat-bubble-avatar">🤖</div>
+                  <div>
+                    <div class="chat-bubble">
+                      おはようございます！😊<br>
+                      📍 渋谷区第3工区<br>
+                      <strong>08:47 出勤を記録しました ✅</strong><br>
+                      <span style="font-size:12px;color:#64748b;">今日も安全に作業してください</span>
+                    </div>
+                  </div>
+                  <span class="chat-time" style="color:rgba(0,0,0,0.4);">08:47</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== セクション4: よくある質問 ===== -->
+  <section class="section">
+    <div class="container">
+      <div class="section-label">よくある質問</div>
+      <h2 class="section-title">よくある質問 ❓</h2>
+      <p class="section-desc">気になることがあればチェックしてみてください。</p>
+
+      <div class="faq-list" id="faqList">
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="faq-q-icon">Q</span>
+            <span class="faq-q-text">スマホじゃないと使えませんか？</span>
+            <span class="faq-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer-wrap">
+            <div class="faq-answer">
+              📱 LINEが使えるスマホ・タブレット・PCどちらでも使えます。インターネットに繋がってさえいれば大丈夫です。
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="faq-q-icon">Q</span>
+            <span class="faq-q-text">個人のLINEアカウントで大丈夫ですか？</span>
+            <span class="faq-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer-wrap">
+            <div class="faq-answer">
+              ✅ はい。会社の公式LINEアカウントを「友達追加」するだけです。個人情報は取得しませんので、安心してご利用ください。
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="faq-q-icon">Q</span>
+            <span class="faq-q-text">操作を間違えたらどうなりますか？</span>
+            <span class="faq-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer-wrap">
+            <div class="faq-answer">
+              🔄 AIが「もう一度確認しますね」と返信します。取り消しや修正もLINEで対応できるので、安心して使ってください。
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            <span class="faq-q-icon">Q</span>
+            <span class="faq-q-text">料金はかかりますか？</span>
+            <span class="faq-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div class="faq-answer-wrap">
+            <div class="faq-answer">
+              🆓 従業員の方は無料でご利用いただけます。費用は会社側が負担しておりますので、ご安心ください。
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== フッター ===== -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-logo">
+        <div class="footer-logo-icon">🤝</div>
+        <span class="footer-logo-text">AI Shaker</span>
+      </div>
+      <p class="footer-msg">
+        いつも使っているLINEで、<br>仕事がもっとラクになります。
+      </p>
+      <div class="footer-contact-note">
+        📞 ご不明な点は担当者までご連絡ください
+      </div>
+      <p class="footer-copyright">© 2026 AI Shaker. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- ===== JavaScript: アコーディオン ===== -->
+  <script>
+    (function () {
+      var faqItems = document.querySelectorAll('.faq-item');
+
+      faqItems.forEach(function (item) {
+        var btn = item.querySelector('.faq-question');
+        var answerWrap = item.querySelector('.faq-answer-wrap');
+        var answer = item.querySelector('.faq-answer');
+
+        btn.addEventListener('click', function () {
+          var isOpen = item.classList.contains('open');
+
+          // 他を閉じる
+          faqItems.forEach(function (other) {
+            if (other !== item && other.classList.contains('open')) {
+              other.classList.remove('open');
+              other.querySelector('.faq-question').setAttribute('aria-expanded', 'false');
+              other.querySelector('.faq-answer-wrap').style.maxHeight = '0';
+            }
+          });
+
+          if (isOpen) {
+            item.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+            answerWrap.style.maxHeight = '0';
+          } else {
+            item.classList.add('open');
+            btn.setAttribute('aria-expanded', 'true');
+            answerWrap.style.maxHeight = answer.scrollHeight + 32 + 'px';
+          }
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
