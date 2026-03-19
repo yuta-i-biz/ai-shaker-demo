@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Shaker - メニュー開発ウィザード</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif; background: #f5f5f5; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; }
+        .header h1 { font-size: 22px; }
+        .container { max-width: 800px; margin: 20px auto; padding: 0 20px; }
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .step { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #eee; }
+        .step-number { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+        .step-pending .step-number { background: #eee; color: #999; }
+        .step-active .step-number { background: #667eea; color: white; }
+        .step-done .step-number { background: #4caf50; color: white; }
+        .step-label { font-size: 14px; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a6fd6; }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+        textarea { width: 100%; min-height: 120px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical; }
+        .qa-item { margin: 12px 0; padding: 12px; background: #f9f9ff; border-radius: 8px; }
+        .qa-item label { font-weight: 500; display: block; margin-bottom: 6px; }
+        .qa-item input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 6px; }
+        pre { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; overflow-x: auto; font-size: 13px; white-space: pre-wrap; }
+        .loading { text-align: center; padding: 20px; color: #667eea; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>メニュー開発ウィザード</h1>
+        <div style="font-size:13px; opacity:0.8; margin-top:4px;" id="session-info"></div>
+    </div>
+
+    <div class="container">
+        <!-- Progress Steps -->
+        <div class="card">
+            <div id="step-1" class="step step-active"><div class="step-number">1</div><div class="step-label">資料アップロード</div></div>
+            <div id="step-2" class="step step-pending"><div class="step-number">2</div><div class="step-label">AI分析</div></div>
+            <div id="step-3" class="step step-pending"><div class="step-number">3</div><div class="step-label">Q&A</div></div>
+            <div id="step-4" class="step step-pending"><div class="step-number">4</div><div class="step-label">仕様書生成</div></div>
+            <div id="step-5" class="step step-pending"><div class="step-number">5</div><div class="step-label">コード生成</div></div>
+        </div>
+
+        <!-- Step Content -->
+        <div class="card" id="content-area">
+            <!-- Upload Step -->
+            <div id="upload-section">
+                <h3 style="margin-bottom:12px;">業務資料のアップロード</h3>
+                <p style="font-size:13px; color:#666; margin-bottom:12px;">自動化したい業務のフロー、ルール、資料をテキストで入力するか、ファイルをアップロードしてください。</p>
+                <textarea id="text-input" placeholder="業務内容を記述してください...&#10;&#10;例:&#10;・毎月の経費精算を自動化したい&#10;・レシート画像をLINEで送ると自動で仕訳される&#10;・freeeに自動登録される"></textarea>
+                <div style="margin-top:12px;">
+                    <input type="file" id="file-input" accept=".pdf,.docx,.txt,.md,.csv">
+                </div>
+                <button class="btn btn-primary" style="margin-top:16px;" onclick="uploadContent()">アップロード</button>
+            </div>
+
+            <!-- Analysis Section -->
+            <div id="analysis-section" class="hidden">
+                <h3 style="margin-bottom:12px;">AI分析結果</h3>
+                <pre id="analysis-result"></pre>
+                <button class="btn btn-primary" style="margin-top:16px;" onclick="getQuestions()">次へ: Q&A</button>
+            </div>
+
+            <!-- QA Section -->
+            <div id="qa-section" class="hidden">
+                <h3 style="margin-bottom:12px;">追加質問</h3>
+                <div id="qa-list"></div>
+                <button class="btn btn-primary" style="margin-top:16px;" onclick="submitAnswers()">回答を送信</button>
+            </div>
+
+            <!-- Spec Section -->
+            <div id="spec-section" class="hidden">
+                <h3 style="margin-bottom:12px;">仕様書</h3>
+                <pre id="spec-result"></pre>
+                <button class="btn btn-primary" style="margin-top:16px;" onclick="generateCode()">コードを生成</button>
+            </div>
+
+            <!-- Code Section -->
+            <div id="code-section" class="hidden">
+                <h3 style="margin-bottom:12px;">生成されたプラグインコード</h3>
+                <pre id="code-result"></pre>
+                <button class="btn btn-primary" style="margin-top:16px;" onclick="downloadPlugin()">ZIPダウンロード</button>
+            </div>
+
+            <div id="loading" class="loading hidden">処理中...</div>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('session');
+
+        if (!sessionId) {
+            document.getElementById('content-area').innerHTML = '<p style="color:#c00;">セッションIDが指定されていません。ダッシュボードから開いてください。</p>';
+        } else {
+            document.getElementById('session-info').textContent = `Session: ${sessionId.substring(0, 8)}...`;
+            loadSession();
+        }
+
+        async function loadSession() {
+            const res = await fetch(API + `/api/menu-factory/sessions/${sessionId}`);
+            const s = await res.json();
+            updateSteps(s.status);
+        }
+
+        function updateSteps(status) {
+            const steps = ['created', 'uploaded', 'analyzed', 'questioning', 'finalized', 'generated'];
+            const idx = steps.indexOf(status);
+            for (let i = 1; i <= 5; i++) {
+                const el = document.getElementById(`step-${i}`);
+                el.className = 'step ' + (i - 1 < idx ? 'step-done' : i - 1 === idx ? 'step-active' : 'step-pending');
+            }
+        }
+
+        function showLoading() { document.getElementById('loading').classList.remove('hidden'); }
+        function hideLoading() { document.getElementById('loading').classList.add('hidden'); }
+
+        async function uploadContent() {
+            showLoading();
+            const formData = new FormData();
+            formData.append('text_input', document.getElementById('text-input').value);
+            const file = document.getElementById('file-input').files[0];
+            if (file) formData.append('file', file);
+
+            const res = await fetch(API + `/api/menu-factory/sessions/${sessionId}/upload`, { method: 'POST', body: formData });
+            hideLoading();
+
+            if (res.ok) {
+                document.getElementById('upload-section').classList.add('hidden');
+                showLoading();
+                const analyzeRes = await fetch(API + `/api/menu-factory/sessions/${sessionId}/analyze`, { method: 'POST' });
+                hideLoading();
+                if (analyzeRes.ok) {
+                    const data = await analyzeRes.json();
+                    document.getElementById('analysis-result').textContent = JSON.stringify(data.analysis, null, 2);
+                    document.getElementById('analysis-section').classList.remove('hidden');
+                    updateSteps('analyzed');
+                }
+            }
+        }
+
+        async function getQuestions() {
+            showLoading();
+            document.getElementById('analysis-section').classList.add('hidden');
+            const res = await fetch(API + `/api/menu-factory/sessions/${sessionId}/questions`);
+            hideLoading();
+            if (res.ok) {
+                const data = await res.json();
+                let html = '';
+                (data.questions || []).forEach(q => {
+                    html += `<div class="qa-item"><label>${q.question}</label><input data-qid="${q.id}" placeholder="回答を入力..."></div>`;
+                });
+                document.getElementById('qa-list').innerHTML = html;
+                document.getElementById('qa-section').classList.remove('hidden');
+                updateSteps('questioning');
+            }
+        }
+
+        async function submitAnswers() {
+            const inputs = document.querySelectorAll('#qa-list input');
+            const answers = [];
+            inputs.forEach(inp => {
+                answers.push({ question_id: inp.dataset.qid, answer: inp.value });
+            });
+            showLoading();
+            await fetch(API + `/api/menu-factory/sessions/${sessionId}/answer`, {
+                method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ answers })
+            });
+            document.getElementById('qa-section').classList.add('hidden');
+            const specRes = await fetch(API + `/api/menu-factory/sessions/${sessionId}/finalize`, { method: 'POST' });
+            hideLoading();
+            if (specRes.ok) {
+                const sRes = await fetch(API + `/api/menu-factory/sessions/${sessionId}/spec`);
+                const sData = await sRes.json();
+                document.getElementById('spec-result').textContent = sData.spec_markdown;
+                document.getElementById('spec-section').classList.remove('hidden');
+                updateSteps('finalized');
+            }
+        }
+
+        async function generateCode() {
+            showLoading();
+            document.getElementById('spec-section').classList.add('hidden');
+            const res = await fetch(API + `/api/menu-factory/sessions/${sessionId}/generate`, { method: 'POST' });
+            hideLoading();
+            if (res.ok) {
+                const sRes = await fetch(API + `/api/menu-factory/sessions/${sessionId}`);
+                const sData = await sRes.json();
+                document.getElementById('code-result').textContent = sData.generated_code;
+                document.getElementById('code-section').classList.remove('hidden');
+                updateSteps('generated');
+            }
+        }
+
+        function downloadPlugin() {
+            window.location.href = API + `/api/menu-factory/sessions/${sessionId}/download`;
+        }
+    </script>
+</body>
+</html>
