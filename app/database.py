@@ -5,7 +5,14 @@ import os
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./smart_exec.db")
+def _default_db_url() -> str:
+    """Return the default SQLite URL, using /data/app.db if the volume is mounted."""
+    if os.path.isdir("/data"):
+        return "sqlite:////data/app.db"
+    return "sqlite:///./smart_exec.db"
+
+
+DATABASE_URL = os.getenv("DATABASE_URL", _default_db_url())
 
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
