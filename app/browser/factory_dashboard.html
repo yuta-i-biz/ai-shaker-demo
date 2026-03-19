@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Shaker - 管理ダッシュボード</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif; background: #f5f5f5; color: #333; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 24px; }
+        .header .subtitle { opacity: 0.8; font-size: 14px; }
+        .nav { background: white; border-bottom: 1px solid #e0e0e0; padding: 0 30px; display: flex; gap: 0; }
+        .nav button { background: none; border: none; padding: 15px 20px; cursor: pointer; font-size: 14px; color: #666; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .nav button.active { color: #667eea; border-bottom-color: #667eea; font-weight: 600; }
+        .nav button:hover { color: #667eea; }
+        .container { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+        .card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .card h2 { font-size: 18px; margin-bottom: 16px; color: #444; }
+        .card h3 { font-size: 15px; margin-bottom: 8px; color: #555; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        th { font-weight: 600; color: #666; background: #fafafa; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .badge-enabled { background: #e8f5e9; color: #2e7d32; }
+        .badge-disabled { background: #fce4ec; color: #c62828; }
+        .btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a6fd6; }
+        .btn-danger { background: #ef5350; color: white; }
+        .btn-danger:hover { background: #e53935; }
+        .btn-sm { padding: 5px 12px; font-size: 12px; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 500; margin-bottom: 4px; color: #555; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .stat-card { text-align: center; padding: 16px; background: #f8f9ff; border-radius: 8px; }
+        .stat-card .number { font-size: 32px; font-weight: 700; color: #667eea; }
+        .stat-card .label { font-size: 13px; color: #888; margin-top: 4px; }
+        .hidden { display: none !important; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 100; }
+        .modal-content { background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 500px; }
+        .toast { position: fixed; bottom: 20px; right: 20px; padding: 12px 24px; background: #333; color: white; border-radius: 8px; font-size: 14px; z-index: 200; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } .nav { overflow-x: auto; } }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>AI Shaker</h1>
+            <div class="subtitle">管理ダッシュボード</div>
+        </div>
+        <div style="font-size:13px; opacity:0.8;">SmartExec v1.0</div>
+    </div>
+
+    <div class="nav">
+        <button class="active" onclick="showTab('tenants')">テナント管理</button>
+        <button onclick="showTab('tickets')">チケット管理</button>
+        <button onclick="showTab('factory')">メニュー開発</button>
+    </div>
+
+    <div class="container">
+        <!-- Tenants Tab -->
+        <div id="tab-tenants">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h2>テナント一覧</h2>
+                    <button class="btn btn-primary" onclick="showCreateTenantModal()">+ 新規テナント</button>
+                </div>
+                <div id="stats" class="grid-2" style="margin-bottom:20px;">
+                    <div class="stat-card"><div class="number" id="stat-tenants">-</div><div class="label">テナント数</div></div>
+                    <div class="stat-card"><div class="number" id="stat-menus">-</div><div class="label">有効メニュー数</div></div>
+                </div>
+                <table>
+                    <thead><tr><th>テナント名</th><th>業種</th><th>メニュー</th><th>チケット</th><th>操作</th></tr></thead>
+                    <tbody id="tenants-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tickets Tab -->
+        <div id="tab-tickets" class="hidden">
+            <div class="card">
+                <h2>チケット残高・履歴</h2>
+                <div id="tickets-content"></div>
+            </div>
+        </div>
+
+        <!-- Factory Tab -->
+        <div id="tab-factory" class="hidden">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+                    <h2>メニュー開発セッション</h2>
+                    <button class="btn btn-primary" onclick="showCreateSessionModal()">+ 新規セッション</button>
+                </div>
+                <table>
+                    <thead><tr><th>メニュー名</th><th>ステータス</th><th>作成日</th><th>操作</th></tr></thead>
+                    <tbody id="sessions-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Tenant Modal -->
+    <div id="modal-tenant" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="margin-bottom:20px;">新規テナント作成</h2>
+            <div class="form-group"><label>テナント名</label><input id="new-tenant-name" placeholder="例: 株式会社サンプル"></div>
+            <div class="form-group"><label>業種</label><input id="new-tenant-industry" placeholder="例: IT"></div>
+            <div class="form-group"><label>LINE User ID (任意)</label><input id="new-tenant-line" placeholder="U..."></div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+                <button class="btn" onclick="hideModal('modal-tenant')" style="background:#eee;">キャンセル</button>
+                <button class="btn btn-primary" onclick="createTenant()">作成</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Session Modal -->
+    <div id="modal-session" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="margin-bottom:20px;">新規メニュー開発セッション</h2>
+            <div class="form-group"><label>メニュー名</label><input id="new-session-name" placeholder="例: invoice_manager"></div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:20px;">
+                <button class="btn" onclick="hideModal('modal-session')" style="background:#eee;">キャンセル</button>
+                <button class="btn btn-primary" onclick="createSession()">作成</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = '';  // Same origin
+
+        function showTab(tab) {
+            document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('[id^="tab-"]').forEach(t => t.classList.add('hidden'));
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tab).classList.remove('hidden');
+            if (tab === 'tenants') loadTenants();
+            if (tab === 'tickets') loadTickets();
+            if (tab === 'factory') loadSessions();
+        }
+
+        function toast(msg) {
+            const t = document.createElement('div');
+            t.className = 'toast';
+            t.textContent = msg;
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        function showCreateTenantModal() { document.getElementById('modal-tenant').classList.remove('hidden'); }
+        function showCreateSessionModal() { document.getElementById('modal-session').classList.remove('hidden'); }
+        function hideModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        async function loadTenants() {
+            const res = await fetch(API + '/api/tenants');
+            const tenants = await res.json();
+            document.getElementById('stat-tenants').textContent = tenants.length;
+            let totalMenus = 0;
+            let html = '';
+            tenants.forEach(t => {
+                const enabledMenus = t.menus.filter(m => m.status === 'enabled');
+                totalMenus += enabledMenus.length;
+                const menuBadges = t.menus.map(m =>
+                    `<span class="badge ${m.status === 'enabled' ? 'badge-enabled' : 'badge-disabled'}">${m.name}</span>`
+                ).join(' ');
+                html += `<tr>
+                    <td><strong>${t.name}</strong><br><small style="color:#999;">${t.id.substring(0,8)}...</small></td>
+                    <td>${t.industry || '-'}</td>
+                    <td>${menuBadges || '<span style="color:#999;">なし</span>'}</td>
+                    <td>${t.ticket_balance}</td>
+                    <td><button class="btn btn-sm btn-primary" onclick="viewTenantConfig('${t.id}')">設定</button></td>
+                </tr>`;
+            });
+            document.getElementById('stat-menus').textContent = totalMenus;
+            document.getElementById('tenants-body').innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:#999;">テナントがありません</td></tr>';
+        }
+
+        async function createTenant() {
+            const name = document.getElementById('new-tenant-name').value;
+            if (!name) { toast('テナント名を入力してください'); return; }
+            const body = {
+                name,
+                industry: document.getElementById('new-tenant-industry').value,
+                line_user_id: document.getElementById('new-tenant-line').value || null,
+            };
+            await fetch(API + '/api/tenants', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+            hideModal('modal-tenant');
+            toast('テナントを作成しました');
+            loadTenants();
+        }
+
+        async function viewTenantConfig(id) {
+            const res = await fetch(API + `/api/tenants/${id}/config`);
+            const data = await res.json();
+            alert(JSON.stringify(data.config, null, 2));
+        }
+
+        async function loadTickets() {
+            const res = await fetch(API + '/api/tickets');
+            const tickets = await res.json();
+            let html = '';
+            tickets.forEach(t => {
+                html += `<div style="margin-bottom:20px;">
+                    <h3>${t.tenant_name} <span style="color:#667eea; font-size:20px; margin-left:10px;">${t.current_balance} チケット</span></h3>
+                    <div style="margin:10px 0;"><button class="btn btn-sm btn-primary" onclick="addTickets('${t.tenant_id}')">チケット補充</button></div>
+                    <table><thead><tr><th>アクション</th><th>消費</th><th>説明</th><th>日時</th></tr></thead><tbody>`;
+                (t.logs || []).forEach(log => {
+                    html += `<tr><td>${log.action}</td><td>${log.tickets_consumed}</td><td>${log.description}</td><td>${log.created_at ? new Date(log.created_at).toLocaleString('ja-JP') : '-'}</td></tr>`;
+                });
+                html += `</tbody></table></div>`;
+            });
+            document.getElementById('tickets-content').innerHTML = html || '<p style="color:#999;">データがありません</p>';
+        }
+
+        async function addTickets(tenantId) {
+            const count = prompt('補充するチケット数を入力:', '10');
+            if (!count) return;
+            await fetch(API + '/api/tickets', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ tenant_id: tenantId, tickets: parseInt(count), description: 'ダッシュボードから補充' })
+            });
+            toast('チケットを補充しました');
+            loadTickets();
+        }
+
+        async function loadSessions() {
+            const res = await fetch(API + '/api/menu-factory/sessions');
+            const sessions = await res.json();
+            let html = '';
+            sessions.forEach(s => {
+                html += `<tr>
+                    <td>${s.menu_name}</td>
+                    <td><span class="badge badge-enabled">${s.status}</span></td>
+                    <td>${s.created_at ? new Date(s.created_at).toLocaleString('ja-JP') : '-'}</td>
+                    <td><button class="btn btn-sm btn-primary" onclick="window.open('/browser/menu_factory.html?session=${s.id}','_blank')">詳細</button></td>
+                </tr>`;
+            });
+            document.getElementById('sessions-body').innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:#999;">セッションがありません</td></tr>';
+        }
+
+        async function createSession() {
+            const name = document.getElementById('new-session-name').value;
+            if (!name) { toast('メニュー名を入力してください'); return; }
+            await fetch(API + '/api/menu-factory/sessions', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ menu_name: name })
+            });
+            hideModal('modal-session');
+            toast('セッションを作成しました');
+            loadSessions();
+        }
+
+        // Initial load
+        loadTenants();
+    </script>
+</body>
+</html>
