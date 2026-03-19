@@ -1,7 +1,6 @@
 """Schedule coordination plugin using AI natural language processing."""
 
 import logging
-import re
 from typing import Optional
 
 from sqlalchemy.orm import Session

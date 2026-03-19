@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from typing import Optional
 
-from linebot.v3.messaging.models import MessageEvent
 from sqlalchemy.orm import Session
 
 
